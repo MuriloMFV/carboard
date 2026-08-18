@@ -1,0 +1,105 @@
+.cb-app-header,
+.cb-focused-header {
+  --background: var(--cb-primary);
+  --color: white;
+  box-shadow: none;
+}
+
+.cb-toolbar {
+  --background: var(--cb-primary);
+  --color: white;
+  --min-height: 60px;
+  --border-width: 0;
+  padding-inline: var(--cb-space-xs);
+}
+
+.cb-toolbar ion-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.cb-header-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: white;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+}
+
+.cb-header-button:focus-visible {
+  outline: 2px solid white;
+  outline-offset: -4px;
+}
+
+.cb-bottom-nav {
+  position: fixed;
+  z-index: 20;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: calc(var(--cb-bottom-nav-height) + env(safe-area-inset-bottom));
+  padding: 8px max(8px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px, env(safe-area-inset-left));
+  background: var(--cb-surface);
+  border-top: 1px solid var(--cb-border);
+}
+
+.cb-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--cb-text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cb-nav-item.active {
+  color: var(--cb-primary);
+}
+
+.cb-quick-action-trigger {
+  align-self: start;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin: -28px auto 0;
+  color: white;
+  background: var(--cb-primary);
+  border: 4px solid var(--cb-surface);
+  border-radius: 50%;
+  box-shadow: 0 8px 20px rgb(37 99 235 / 30%);
+}
+
+.cb-vehicle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cb-space-md);
+}
+
+.cb-vehicle-header h1 {
+  margin: 0 0 var(--cb-space-xs);
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+}
+
+.cb-vehicle-header p {
+  margin: 0;
+  color: var(--cb-text-muted);
+}
+
+.cb-mileage {
+  flex: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
