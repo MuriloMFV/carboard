@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CarBoard</string>
+    <string name="title_activity_main">CarBoard</string>
+    <string name="package_name">com.carboard.app</string>
+    <string name="custom_url_scheme">com.carboard.app</string>
+</resources>

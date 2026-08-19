@@ -1,3 +1,4 @@
+import { useIonRouter } from '@ionic/react';
 import { Plus } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Card, PrimaryButton } from '../../components/ui';
@@ -12,6 +13,7 @@ interface SystemRouteParams {
 }
 
 export const VehicleSystemPage = () => {
+  const router = useIonRouter();
   const { systemId } = useParams<SystemRouteParams>();
   const system = mockVehicleSystems.find((item) => item.id === systemId);
 
@@ -53,7 +55,10 @@ export const VehicleSystemPage = () => {
           )}
         </section>
 
-        <PrimaryButton className="cb-vehicle-primary-action" disabled>
+        <PrimaryButton
+          className="cb-vehicle-primary-action"
+          onClick={() => router.push(`/register/maintenance?system=${system.id}`, 'forward')}
+        >
           <Plus size={20} aria-hidden="true" /> Registrar manutenção
         </PrimaryButton>
 

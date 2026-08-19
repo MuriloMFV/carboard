@@ -1,0 +1,498 @@
+.cb-record-page {
+  --cb-record-background: #f8f8ff;
+  background: var(--cb-record-background);
+}
+
+.cb-record-content {
+  --background: var(--cb-record-background);
+}
+
+.cb-record-content::part(scroll) {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.cb-record-container {
+  width: min(100%, 440px);
+  padding: 22px 16px calc(34px + env(safe-area-inset-bottom));
+}
+
+.cb-record-form {
+  display: grid;
+  gap: 18px;
+}
+
+.cb-record-intro {
+  padding: 0 4px 2px;
+}
+
+.cb-record-intro > span {
+  color: #0876ef;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .055em;
+}
+
+.cb-record-intro h1 {
+  margin: 6px 0 5px;
+  color: #20232a;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -.025em;
+}
+
+.cb-record-intro p {
+  margin: 0;
+  color: #687083;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.cb-record-section {
+  overflow: hidden;
+  background: var(--cb-surface);
+  border: 1px solid #dfe4ee;
+  border-radius: 13px;
+  box-shadow: 0 2px 7px rgb(39 50 74 / 4%);
+}
+
+.cb-record-section__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 16px 0;
+}
+
+.cb-record-section__header h2 {
+  margin: 0;
+  color: #5f6879;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.cb-record-section__header p {
+  margin: 4px 0 0;
+  color: #7b8496;
+  font-size: 13px;
+}
+
+.cb-record-section__body {
+  display: grid;
+  gap: 15px;
+  padding: 16px;
+}
+
+.cb-record-section:not(:has(.cb-record-section__header)) .cb-record-section__body {
+  padding-top: 17px;
+}
+
+.cb-record-page .cb-field {
+  gap: 7px;
+}
+
+.cb-record-page .cb-field label,
+.cb-labeled-control > span,
+.cb-component-selector legend {
+  color: #343942;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.cb-record-page .cb-field input,
+.cb-record-page .cb-field select,
+.cb-record-page .cb-field textarea {
+  min-height: 47px;
+  border-color: #bdc8dc;
+  border-radius: 9px;
+}
+
+.cb-record-page .cb-field textarea {
+  min-height: 90px;
+}
+
+.cb-record-page .cb-field-adornment {
+  color: #697285;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.cb-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cb-form-grid > *,
+.cb-fuel-values > * {
+  min-width: 0;
+}
+
+.cb-component-selector {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.cb-component-selector legend {
+  margin-bottom: 8px;
+}
+
+.cb-component-selector label {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 11px;
+  padding: 0 12px;
+  border: 1px solid #d8deea;
+  border-radius: 9px;
+  font-size: 14px;
+}
+
+.cb-component-selector input {
+  width: 19px;
+  height: 19px;
+  margin: 0;
+  accent-color: var(--cb-primary);
+}
+
+.cb-inline-action,
+.cb-text-action {
+  color: #006bdc;
+  background: transparent;
+  border: 0;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.cb-inline-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  gap: 5px;
+  border: 1px dashed #9fc8f5;
+  border-radius: 9px;
+}
+
+.cb-text-action {
+  flex: none;
+  padding: 0;
+}
+
+.cb-attachment-button {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  min-height: 49px;
+  gap: 10px;
+  padding: 0 12px;
+  color: #006bdc;
+  text-align: left;
+  background: #f4f8ff;
+  border: 1px dashed #9fc8f5;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.cb-attachment-button span {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  background: #e4f1ff;
+  border-radius: 50%;
+}
+
+.cb-maintenance-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+}
+
+.cb-maintenance-preview div span,
+.cb-maintenance-preview div strong {
+  display: block;
+}
+
+.cb-maintenance-preview span {
+  margin-bottom: 4px;
+  color: #778094;
+  font-size: 12px;
+}
+
+.cb-maintenance-preview strong {
+  color: #2b3039;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.cb-maintenance-preview > svg {
+  color: #b2bbcb;
+}
+
+.cb-labeled-control {
+  display: grid;
+  gap: 7px;
+}
+
+.cb-labeled-control small {
+  color: #7b8496;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.cb-record-page .cb-segmented-control {
+  background: #e4e8f0;
+}
+
+.cb-record-page .cb-segmented-control button {
+  min-height: 39px;
+  font-size: 14px;
+}
+
+.cb-record-page .cb-segmented-control button[aria-pressed='true'] {
+  color: #006bdc;
+  font-weight: 650;
+}
+
+.cb-fuel-values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cb-fuel-values .cb-field:last-child {
+  grid-column: 1 / -1;
+}
+
+.cb-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 3px;
+}
+
+.cb-toggle-row span {
+  min-width: 0;
+}
+
+.cb-toggle-row strong,
+.cb-toggle-row small {
+  display: block;
+}
+
+.cb-toggle-row strong {
+  font-size: 14px;
+}
+
+.cb-toggle-row small {
+  margin-top: 3px;
+  color: #7b8496;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.cb-toggle-row input {
+  width: 42px;
+  height: 24px;
+  flex: none;
+  accent-color: var(--cb-primary);
+}
+
+.cb-neutral-note,
+.cb-form-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.cb-neutral-note {
+  color: #626b7c;
+  background: #f4f6fa;
+}
+
+.cb-form-error {
+  color: #b42318;
+  background: #fff0ee;
+  border: 1px solid #ffd1cc;
+}
+
+.cb-record-actions {
+  display: grid;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.cb-record-primary {
+  width: 100%;
+  min-height: 50px;
+  border-radius: 10px;
+}
+
+.cb-record-primary:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+.cb-record-cancel {
+  width: 100%;
+  min-height: 44px;
+  color: #697285;
+  background: transparent;
+  border: 0;
+  font-weight: 600;
+}
+
+.cb-success-feedback {
+  display: grid;
+  min-height: calc(100vh - 148px - env(safe-area-inset-top));
+  align-content: center;
+  gap: 22px;
+  text-align: center;
+}
+
+.cb-success-animation {
+  width: 190px;
+  height: 190px;
+  margin: 0 auto -8px;
+  overflow: hidden;
+}
+
+.cb-success-animation > div,
+.cb-success-animation svg {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.cb-success-copy h1 {
+  margin: 0;
+  font-size: 25px;
+  letter-spacing: -.025em;
+}
+
+.cb-success-description {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  color: #737c8e;
+  font-size: 14px;
+}
+
+.cb-success-description strong {
+  color: #30353e;
+  font-size: 16px;
+}
+
+.cb-success-details {
+  display: grid;
+  gap: 5px;
+  padding: 16px;
+  background: var(--cb-surface);
+  border: 1px solid #dfe4ee;
+  border-radius: 12px;
+}
+
+.cb-success-details span {
+  color: #697285;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .05em;
+}
+
+.cb-success-details strong {
+  font-size: 17px;
+}
+
+.cb-success-details small {
+  color: #7b8496;
+  font-size: 12px;
+}
+
+.cb-mileage-sheet {
+  --height: auto;
+  --border-radius: 18px 18px 0 0;
+}
+
+.cb-mileage-sheet::part(content) {
+  max-width: var(--cb-content-max-width);
+  max-height: min(680px, 92vh);
+  margin-inline: auto;
+}
+
+.cb-mileage-sheet__content {
+  min-height: 390px;
+  padding: 8px 20px calc(24px + env(safe-area-inset-bottom));
+}
+
+.cb-mileage-form {
+  display: grid;
+  gap: 17px;
+}
+
+.cb-mileage-form header p {
+  margin: 0 0 5px;
+  color: #0876ef;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .05em;
+}
+
+.cb-mileage-form header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.cb-mileage-form header span {
+  display: block;
+  margin-top: 5px;
+  color: #6f788a;
+  font-size: 14px;
+}
+
+.cb-mileage-sheet .cb-success-feedback {
+  min-height: 500px;
+}
+
+@media (max-width: 370px) {
+  .cb-record-container {
+    padding-inline: 12px;
+  }
+
+  .cb-form-grid,
+  .cb-fuel-values {
+    grid-template-columns: 1fr;
+  }
+
+  .cb-fuel-values .cb-field:last-child {
+    grid-column: auto;
+  }
+
+  .cb-maintenance-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .cb-maintenance-preview > svg {
+    display: none;
+  }
+
+  .cb-success-animation {
+    width: 160px;
+    height: 160px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cb-record-page *,
+  .cb-mileage-sheet * {
+    scroll-behavior: auto !important;
+  }
+}

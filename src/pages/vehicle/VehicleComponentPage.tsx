@@ -1,3 +1,4 @@
+import { useIonRouter } from '@ionic/react';
 import { Pencil, Plus } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Card, PrimaryButton, StatusText } from '../../components/ui';
@@ -14,6 +15,7 @@ interface ComponentRouteParams {
 }
 
 export const VehicleComponentPage = () => {
+  const router = useIonRouter();
   const { componentId } = useParams<ComponentRouteParams>();
   const component = mockVehicleComponents.find((item) => item.id === componentId);
   const system = component ? mockVehicleSystems.find((item) => item.id === component.systemId) : undefined;
@@ -43,7 +45,10 @@ export const VehicleComponentPage = () => {
           </Card>
         )}
 
-        <PrimaryButton className="cb-vehicle-primary-action" disabled>
+        <PrimaryButton
+          className="cb-vehicle-primary-action"
+          onClick={() => router.push(`/register/maintenance?system=${component.systemId}&component=${component.id}`, 'forward')}
+        >
           <Plus size={20} aria-hidden="true" /> Registrar manutenção
         </PrimaryButton>
 

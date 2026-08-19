@@ -1,5 +1,8 @@
 import { Gauge, Pencil } from 'lucide-react';
+import { useState } from 'react';
 import { Card } from '../../components/ui';
+import { MileageUpdateSheet } from '../../features/records/components/MileageUpdateSheet';
+import { useRecords } from '../../features/records/RecordsContext';
 import { VehicleMainShell } from '../../features/vehicles/components/VehicleMainShell';
 import { mockVehicle, mockVehicleMetadata } from '../../features/vehicles/mocks';
 import { formatDate, formatMileage } from '../../utils/formatters';
@@ -11,8 +14,12 @@ const InfoRow = ({ label, value, muted = false }: { label: string; value: string
   </div>
 );
 
-export const VehicleInfoPage = () => (
-  <VehicleMainShell>
+export const VehicleInfoPage = () => {
+  const [isMileageOpen, setMileageOpen] = useState(false);
+  const { currentMileage } = useRecords();
+
+  return (
+    <VehicleMainShell>
     <div className="cb-vehicle-screen cb-info-screen">
       <section className="cb-info-section">
         <header><h2>Dados do veículo</h2><span aria-disabled="true"><Pencil size={15} aria-hidden="true" /> Editar</span></header>
@@ -31,10 +38,12 @@ export const VehicleInfoPage = () => (
         <Card className="cb-mileage-info-card">
           <div>
             <span>Quilometragem atual</span>
-            <strong>{formatMileage(mockVehicle.currentMileage)} km</strong>
+            <strong>{formatMileage(currentMileage)} km</strong>
             <small>Última atualização: hoje</small>
           </div>
-          <span className="cb-info-action" aria-disabled="true"><Gauge size={17} aria-hidden="true" /> Atualizar KM</span>
+          <button className="cb-info-action" type="button" onClick={() => setMileageOpen(true)}>
+            <Gauge size={17} aria-hidden="true" /> Atualizar KM
+          </button>
         </Card>
       </section>
 
@@ -56,5 +65,7 @@ export const VehicleInfoPage = () => (
 
       <p className="cb-vehicle-added-date">Adicionado ao CarBoard em {formatDate(mockVehicleMetadata.addedAt)}</p>
     </div>
-  </VehicleMainShell>
-);
+      <MileageUpdateSheet isOpen={isMileageOpen} onDismiss={() => setMileageOpen(false)} />
+    </VehicleMainShell>
+  );
+};

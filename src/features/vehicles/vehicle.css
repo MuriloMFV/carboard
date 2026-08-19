@@ -565,6 +565,7 @@
   border-radius: 9px;
   font-size: 14px;
   font-weight: 650;
+  border: 0;
 }
 
 .cb-vehicle-added-date {

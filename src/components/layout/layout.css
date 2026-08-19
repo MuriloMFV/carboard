@@ -36,6 +36,17 @@
   outline-offset: -4px;
 }
 
+.cb-focused-context {
+  display: grid;
+  min-height: 42px;
+  place-items: center;
+  color: #687083;
+  background: var(--cb-surface);
+  border-bottom: 1px solid var(--cb-border);
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .cb-bottom-nav {
   position: fixed;
   z-index: 20;
