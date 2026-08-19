@@ -1,10 +1,14 @@
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route } from 'react-router-dom';
+import type { ComponentType } from 'react';
+import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import { OnboardingProvider } from './features/onboarding/OnboardingContext';
-import { RecordsProvider } from './features/records/RecordsContext';
+import { VehicleProvider, useVehicle } from './features/vehicles/VehicleContext';
+import { FlowLoadingPage } from './pages/FlowLoadingPage';
 import { HomePage } from './pages/HomePage';
 import { MainPlaceholderPage } from './pages/MainPlaceholderPage';
+import { LoginPage, SignUpPage } from './pages/auth/AuthFormPage';
 import { InitialCheckPage } from './pages/onboarding/InitialCheckPage';
 import { MileagePage } from './pages/onboarding/MileagePage';
 import { SetupCompletePage } from './pages/onboarding/SetupCompletePage';
@@ -30,39 +34,98 @@ const HistoryPage = () => (
   <MainPlaceholderPage title="Histórico" description="A linha do tempo unificada dos registros aparecerá aqui." />
 );
 
+interface GuardedRouteProps {
+  exact?: boolean;
+  path: string;
+  component: ComponentType;
+  requiresVehicle?: boolean;
+  onboardingOnly?: boolean;
+}
+
+const GuardedRoute = ({ component: Component, requiresVehicle = false, onboardingOnly = false, ...routeProps }: GuardedRouteProps) => {
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const { selectedVehicle, isLoading: isVehicleLoading } = useVehicle();
+
+  return (
+    <Route
+      {...routeProps}
+      render={() => {
+        if (isAuthLoading || (user && isVehicleLoading)) return <FlowLoadingPage />;
+        if (!user) return <Redirect to="/auth/login" />;
+        if (onboardingOnly && selectedVehicle) return <Redirect to="/home" />;
+        if (requiresVehicle && !selectedVehicle) return <Redirect to="/onboarding" />;
+        return <Component />;
+      }}
+    />
+  );
+};
+
+const AuthRoute = ({ component: Component, ...routeProps }: Omit<GuardedRouteProps, 'requiresVehicle' | 'onboardingOnly'>) => {
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const { selectedVehicle, isLoading: isVehicleLoading } = useVehicle();
+
+  return (
+    <Route
+      {...routeProps}
+      render={() => {
+        if (isAuthLoading || (user && isVehicleLoading)) return <FlowLoadingPage />;
+        if (user) return <Redirect to={selectedVehicle ? '/home' : '/onboarding'} />;
+        return <Component />;
+      }}
+    />
+  );
+};
+
+const FlowRedirect = () => {
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const { selectedVehicle, isLoading: isVehicleLoading } = useVehicle();
+  if (isAuthLoading || (user && isVehicleLoading)) return <FlowLoadingPage />;
+  if (!user) return <Redirect to="/auth/login" />;
+  return <Redirect to={selectedVehicle ? '/home' : '/onboarding'} />;
+};
+
+const AppRouter = () => (
+  <IonReactRouter>
+    <IonRouterOutlet>
+      <AuthRoute exact path="/auth/login" component={LoginPage} />
+      <AuthRoute exact path="/auth/signup" component={SignUpPage} />
+
+      <GuardedRoute exact path="/onboarding" component={WelcomePage} onboardingOnly />
+      <GuardedRoute exact path="/onboarding/vehicle" component={VehicleIdentificationPage} onboardingOnly />
+      <GuardedRoute exact path="/onboarding/mileage" component={MileagePage} onboardingOnly />
+      <GuardedRoute exact path="/onboarding/initial-check" component={InitialCheckPage} onboardingOnly />
+      <GuardedRoute exact path="/onboarding/complete" component={SetupCompletePage} requiresVehicle />
+
+      <GuardedRoute exact path="/home" component={HomePage} requiresVehicle />
+      <GuardedRoute exact path="/vehicle" component={VehicleOverviewPage} requiresVehicle />
+      <GuardedRoute exact path="/vehicle/components" component={VehicleComponentsPage} requiresVehicle />
+      <GuardedRoute exact path="/vehicle/info" component={VehicleInfoPage} requiresVehicle />
+      <GuardedRoute exact path="/vehicle/system/:systemId" component={VehicleSystemPage} requiresVehicle />
+      <GuardedRoute exact path="/vehicle/component/:componentId" component={VehicleComponentPage} requiresVehicle />
+
+      <GuardedRoute exact path="/register/maintenance" component={MaintenanceRecordPage} requiresVehicle />
+      <GuardedRoute exact path="/register/fuel" component={FuelRecordPage} requiresVehicle />
+      <GuardedRoute exact path="/register/problem" component={ProblemRecordPage} requiresVehicle />
+      <GuardedRoute exact path="/register/improvement" component={ImprovementRecordPage} requiresVehicle />
+
+      <GuardedRoute exact path="/expenses" component={ExpensesPage} requiresVehicle />
+      <GuardedRoute exact path="/history" component={HistoryPage} requiresVehicle />
+      <Route exact path="/" component={FlowRedirect} />
+      <Route component={FlowRedirect} />
+    </IonRouterOutlet>
+  </IonReactRouter>
+);
+
 export default function App() {
   return (
     <IonApp>
-      <OnboardingProvider>
-        <RecordsProvider>
-          <IonReactRouter>
-            <IonRouterOutlet>
-            <Route exact path="/onboarding" component={WelcomePage} />
-            <Route exact path="/onboarding/vehicle" component={VehicleIdentificationPage} />
-            <Route exact path="/onboarding/mileage" component={MileagePage} />
-            <Route exact path="/onboarding/initial-check" component={InitialCheckPage} />
-            <Route exact path="/onboarding/complete" component={SetupCompletePage} />
-
-            <Route exact path="/home" component={HomePage} />
-            <Route exact path="/vehicle" component={VehicleOverviewPage} />
-            <Route exact path="/vehicle/components" component={VehicleComponentsPage} />
-            <Route exact path="/vehicle/info" component={VehicleInfoPage} />
-            <Route exact path="/vehicle/system/:systemId" component={VehicleSystemPage} />
-            <Route exact path="/vehicle/component/:componentId" component={VehicleComponentPage} />
-
-            <Route exact path="/register/maintenance" component={MaintenanceRecordPage} />
-            <Route exact path="/register/fuel" component={FuelRecordPage} />
-            <Route exact path="/register/problem" component={ProblemRecordPage} />
-            <Route exact path="/register/improvement" component={ImprovementRecordPage} />
-
-            <Route exact path="/expenses" component={ExpensesPage} />
-            <Route exact path="/history" component={HistoryPage} />
-            <Route exact path="/" render={() => <Redirect to="/home" />} />
-            <Route render={() => <Redirect to="/home" />} />
-            </IonRouterOutlet>
-          </IonReactRouter>
-        </RecordsProvider>
-      </OnboardingProvider>
+      <AuthProvider>
+        <VehicleProvider>
+          <OnboardingProvider>
+            <AppRouter />
+          </OnboardingProvider>
+        </VehicleProvider>
+      </AuthProvider>
     </IonApp>
   );
 }

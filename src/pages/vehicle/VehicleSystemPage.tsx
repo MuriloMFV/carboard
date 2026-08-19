@@ -3,10 +3,10 @@ import { Plus } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Card, PrimaryButton } from '../../components/ui';
 import { ComponentRow } from '../../features/vehicles/components/ComponentRow';
-import { MaintenanceHistoryRow } from '../../features/vehicles/components/MaintenanceHistoryRow';
+import { VehicleDataState } from '../../features/vehicles/components/VehicleDataState';
 import { VehicleDetailShell } from '../../features/vehicles/components/VehicleDetailShell';
 import { VehicleIcon } from '../../features/vehicles/components/VehicleIcon';
-import { mockMotorActivity, mockVehicleComponents, mockVehicleSystems } from '../../features/vehicles/mocks';
+import { useVehicle } from '../../features/vehicles/VehicleContext';
 
 interface SystemRouteParams {
   systemId: string;
@@ -15,7 +15,22 @@ interface SystemRouteParams {
 export const VehicleSystemPage = () => {
   const router = useIonRouter();
   const { systemId } = useParams<SystemRouteParams>();
-  const system = mockVehicleSystems.find((item) => item.id === systemId);
+  const {
+    vehicleComponents,
+    vehicleSystems,
+    isVehicleDataLoading,
+    vehicleDataError,
+    refreshVehicleData,
+  } = useVehicle();
+  const system = vehicleSystems.find((item) => item.id === systemId || item.catalogId === systemId);
+
+  if (isVehicleDataLoading || vehicleDataError) {
+    return (
+      <VehicleDetailShell title="Sistema" fallbackPath="/vehicle">
+        <VehicleDataState error={vehicleDataError} onRetry={() => void refreshVehicleData()} />
+      </VehicleDetailShell>
+    );
+  }
 
   if (!system) {
     return (
@@ -25,8 +40,7 @@ export const VehicleSystemPage = () => {
     );
   }
 
-  const components = mockVehicleComponents.filter((component) => component.systemId === system.id);
-  const activity = system.id === 'motor' ? mockMotorActivity : [];
+  const components = vehicleComponents.filter((component) => component.systemCatalogId === system.catalogId);
 
   return (
     <VehicleDetailShell title={system.name} fallbackPath="/vehicle">
@@ -38,6 +52,7 @@ export const VehicleSystemPage = () => {
             <strong>{system.componentCount} componentes</strong>
             <p>
               <span>{system.goodCount} OK</span>
+              {system.criticalCount > 0 && <><i aria-hidden="true" /><em>{system.criticalCount} crítico</em></>}
               {system.attentionCount > 0 && <><i aria-hidden="true" /><em>{system.attentionCount} em atenção</em></>}
               {system.noDataCount > 0 && <><i aria-hidden="true" /><small>{system.noDataCount} sem dados</small></>}
             </p>
@@ -51,7 +66,7 @@ export const VehicleSystemPage = () => {
               {components.map((component) => <ComponentRow key={component.id} component={component} />)}
             </Card>
           ) : (
-            <Card className="cb-empty-filter-result">Nenhum componente cadastrado neste mock.</Card>
+            <Card className="cb-empty-filter-result">Nenhum componente cadastrado neste sistema.</Card>
           )}
         </section>
 
@@ -62,15 +77,10 @@ export const VehicleSystemPage = () => {
           <Plus size={20} aria-hidden="true" /> Registrar manutenção
         </PrimaryButton>
 
-        {activity.length > 0 && (
-          <section className="cb-detail-section">
-            <h2>Atividade recente</h2>
-            <Card className="cb-activity-card">
-              {activity.map((record) => <MaintenanceHistoryRow key={record.id} record={record} />)}
-              <span className="cb-card-action" aria-disabled="true">Ver histórico do motor ›</span>
-            </Card>
-          </section>
-        )}
+        <section className="cb-detail-section">
+          <h2>Atividade recente</h2>
+          <Card className="cb-empty-filter-result">Sem dados de manutenção.</Card>
+        </section>
 
         <button className="cb-add-component-text" type="button" aria-disabled="true">
           <Plus size={16} aria-hidden="true" /> Adicionar componente ao {system.name.toLocaleLowerCase('pt-BR')}

@@ -1,112 +1,171 @@
 import { useIonRouter } from '@ionic/react';
 import { ChevronRight, Plus } from 'lucide-react';
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { CurrencyField, DateField, FormField, MileageField, SelectField, TextareaField } from '../../components/forms';
-import { formatDate, formatMileage, formatMonthYear } from '../../utils/formatters';
 import { AttachmentButton } from '../../features/records/components/AttachmentButton';
 import { FormActions } from '../../features/records/components/FormActions';
 import { RecordFormSection } from '../../features/records/components/RecordFormSection';
 import { RecordFormShell } from '../../features/records/components/RecordFormShell';
 import { SuccessFeedback } from '../../features/records/components/SuccessFeedback';
-import { createRecordId, useRecords } from '../../features/records/RecordsContext';
-import { parseDecimal, parseMileage } from '../../features/records/utils';
-import { mockVehicle } from '../../features/vehicles/mocks';
+import { createMaintenance } from '../../features/records/services/maintenance.service';
+import { getTodayDate, parseDecimal, parseMileage } from '../../features/records/utils';
+import { useVehicle } from '../../features/vehicles/VehicleContext';
+import { formatDate, formatMileage, formatMonthYear } from '../../utils/formatters';
 
-const components = [
-  { id: 'engine-oil', label: 'Óleo do motor' },
-  { id: 'oil-filter', label: 'Filtro de óleo' },
-  { id: 'air-filter', label: 'Filtro de ar' },
-];
-
-const buildSuggestion = (selected: string[]) => {
-  const oil = selected.includes('engine-oil');
-  const oilFilter = selected.includes('oil-filter');
+const buildSuggestion = (names: string[]) => {
+  const normalized = names.map((name) => name.toLocaleLowerCase('pt-BR'));
+  const oil = normalized.some((name) => name === 'óleo do motor');
+  const oilFilter = normalized.some((name) => name === 'filtro de óleo');
   if (oil && oilFilter) return 'Troca de óleo + filtro';
   if (oil) return 'Troca de óleo';
   if (oilFilter) return 'Troca do filtro de óleo';
-  if (selected.includes('air-filter')) return 'Troca do filtro de ar';
-  return '';
+  if (names.length === 1) return `Manutenção de ${names[0].toLocaleLowerCase('pt-BR')}`;
+  return names.length > 1 ? 'Manutenção de componentes' : '';
+};
+
+const addMonths = (date: string, months: number | undefined) => {
+  if (!months) return undefined;
+  const parsed = new Date(`${date}T00:00:00Z`);
+  parsed.setUTCMonth(parsed.getUTCMonth() + months);
+  return parsed.toISOString().slice(0, 10);
 };
 
 export const MaintenanceRecordPage = () => {
   const router = useIonRouter();
   const location = useLocation();
-  const { addMaintenance, currentMileage } = useRecords();
+  const {
+    selectedVehicle,
+    vehicleSystems,
+    vehicleComponents,
+    updateVehicleMileage,
+    refreshVehicleData,
+  } = useVehicle();
   const query = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const requestedComponent = query.get('component');
-  const initialComponents = requestedComponent && components.some(({ id }) => id === requestedComponent)
-    ? [requestedComponent]
-    : ['engine-oil', 'oil-filter'];
-  const [systemId, setSystemId] = useState(query.get('system') ?? 'motor');
-  const [selected, setSelected] = useState(initialComponents);
-  const [service, setService] = useState(buildSuggestion(initialComponents));
+  const requestedSystem = query.get('system');
+  const initialized = useRef(false);
+  const [systemId, setSystemId] = useState('');
+  const [selected, setSelected] = useState<string[]>([]);
+  const [service, setService] = useState('');
   const [serviceEdited, setServiceEdited] = useState(false);
-  const [date, setDate] = useState('2026-08-12');
-  const [mileage, setMileage] = useState(formatMileage(currentMileage));
-  const [viscosity, setViscosity] = useState('5W-40');
-  const [productType, setProductType] = useState('Sintético');
-  const [product, setProduct] = useState('Mobil Super 3000');
-  const [quantity, setQuantity] = useState('3,5');
-  const [totalCost, setTotalCost] = useState('180');
-  const [workshop, setWorkshop] = useState('Oficina do João');
+  const [date, setDate] = useState(getTodayDate);
+  const [mileage, setMileage] = useState(() => selectedVehicle ? formatMileage(selectedVehicle.currentMileage) : '');
+  const [viscosity, setViscosity] = useState('');
+  const [productType, setProductType] = useState('');
+  const [product, setProduct] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [totalCost, setTotalCost] = useState('');
+  const [workshop, setWorkshop] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    if (initialized.current || vehicleSystems.length === 0) return;
+    const requestedVehicleComponent = vehicleComponents.find(({ id }) => id === requestedComponent);
+    const requestedVehicleSystem = vehicleSystems.find(({ id, catalogId }) =>
+      id === requestedSystem || catalogId === requestedSystem,
+    );
+    const initialSystemId = requestedVehicleComponent?.systemCatalogId
+      ?? requestedVehicleSystem?.catalogId
+      ?? vehicleSystems.find(({ id }) => id === 'motor')?.catalogId
+      ?? vehicleSystems[0].catalogId;
+    setSystemId(initialSystemId);
+    if (requestedVehicleComponent) {
+      setSelected([requestedVehicleComponent.id]);
+      setService(buildSuggestion([requestedVehicleComponent.name]));
+    }
+    initialized.current = true;
+  }, [requestedComponent, requestedSystem, vehicleComponents, vehicleSystems]);
+
+  useEffect(() => {
+    if (mileage || !selectedVehicle) return;
+    setMileage(formatMileage(selectedVehicle.currentMileage));
+  }, [mileage, selectedVehicle]);
+
+  const availableComponents = useMemo(
+    () => vehicleComponents.filter((component) => component.systemCatalogId === systemId),
+    [systemId, vehicleComponents],
+  );
+  const selectedComponents = useMemo(
+    () => vehicleComponents.filter((component) => selected.includes(component.id)),
+    [selected, vehicleComponents],
+  );
+  const oilComponent = selectedComponents.find(({ catalogSlug }) => catalogSlug === 'oleo-do-motor');
+  const hasOilFilter = selectedComponents.some(({ catalogSlug }) => catalogSlug === 'filtro-de-oleo');
+  const intervalKm = selectedComponents.find(({ maintenance }) => maintenance?.intervalKm)?.maintenance?.intervalKm;
+  const intervalMonths = selectedComponents.find(({ maintenance }) => maintenance?.intervalMonths)?.maintenance?.intervalMonths;
   const numericMileage = parseMileage(mileage);
-  const nextMileage = numericMileage === undefined ? undefined : numericMileage + 10_000;
-  const nextDate = useMemo(() => {
-    const parsed = new Date(`${date}T00:00:00Z`);
-    parsed.setUTCFullYear(parsed.getUTCFullYear() + 1);
-    return parsed.toISOString().slice(0, 10);
-  }, [date]);
+  const nextMileage = numericMileage !== undefined && intervalKm ? numericMileage + intervalKm : undefined;
+  const nextDate = addMonths(date, intervalMonths);
 
   const toggleComponent = (componentId: string) => {
     const next = selected.includes(componentId)
       ? selected.filter((id) => id !== componentId)
       : [...selected, componentId];
     setSelected(next);
-    if (!serviceEdited) setService(buildSuggestion(next));
+    if (!serviceEdited) {
+      const names = vehicleComponents.filter((component) => next.includes(component.id)).map(({ name }) => name);
+      setService(buildSuggestion(names));
+    }
   };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (isSubmitting) return;
     const parsedMileage = parseMileage(mileage);
-    if (!systemId || selected.length === 0 || !date || parsedMileage === undefined || !service.trim()) {
+    if (!selectedVehicle || !systemId || selected.length === 0 || !date || parsedMileage === undefined || !service.trim()) {
       setError('Preencha sistema, componente, serviço, data e quilometragem.');
       return;
     }
 
     setError('');
     setSubmitting(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 500));
-    addMaintenance({
-      id: createRecordId('maintenance'),
-      type: 'maintenance',
-      vehicleId: mockVehicle.id,
-      date,
-      mileage: parsedMileage,
-      systemId,
-      title: service.trim(),
-      componentIds: selected,
-      items: selected.includes('engine-oil') ? [{
-        componentId: 'engine-oil',
-        productName: product.trim() || undefined,
-        viscosity: viscosity.trim() || undefined,
-        productType: productType.trim() || undefined,
-        quantity: parseDecimal(quantity),
-      }] : [],
-      totalCost: parseDecimal(totalCost),
-      workshop: workshop.trim() || undefined,
-      notes: notes.trim() || undefined,
-      intervalKm: 10_000,
-      intervalMonths: 12,
-    });
-    setSubmitting(false);
-    setSaved(true);
+    try {
+      await createMaintenance({
+        vehicleId: selectedVehicle.id,
+        serviceDate: date,
+        mileage: parsedMileage,
+        title: service.trim(),
+        items: selectedComponents.map((component) => ({
+          vehicleComponentId: component.id,
+          description: component.name,
+          ...(component.id === oilComponent?.id ? {
+            productName: product.trim() || undefined,
+            specification: {
+              ...(viscosity.trim() ? { viscosity: viscosity.trim() } : {}),
+              ...(productType.trim() ? { type: productType.trim() } : {}),
+              ...(parseDecimal(quantity) !== undefined ? { volumeLiters: parseDecimal(quantity) as number } : {}),
+            },
+            quantity: parseDecimal(quantity),
+          } : {}),
+        })),
+        totalCost: parseDecimal(totalCost),
+        workshop: workshop.trim() || undefined,
+        notes: notes.trim() || undefined,
+        intervalKm,
+        intervalMonths,
+      });
+      updateVehicleMileage(selectedVehicle.id, parsedMileage);
+      void refreshVehicleData();
+      setSaved(true);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Não foi possível registrar a manutenção.');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const intervalLabel = [
+    intervalKm ? `${formatMileage(intervalKm)} km` : '',
+    intervalMonths ? `${intervalMonths} meses` : '',
+  ].filter(Boolean).join(' ou ') || 'Sem intervalo definido';
+  const nextLabel = [
+    nextMileage !== undefined ? `${formatMileage(nextMileage)} km` : '',
+    nextDate ? formatMonthYear(nextDate) : '',
+  ].filter(Boolean).join(' ou ') || 'Sem previsão';
 
   return (
     <RecordFormShell title="Registrar manutenção">
@@ -114,8 +173,8 @@ export const MaintenanceRecordPage = () => {
         <SuccessFeedback
           type="maintenance"
           title="Manutenção registrada!"
-          description={<><strong>{service}</strong><span>{formatMileage(numericMileage ?? currentMileage)} km · {formatDate(date)}</span></>}
-          details={<><span>PRÓXIMA TROCA PREVISTA</span><strong>{formatMileage(nextMileage ?? currentMileage)} km ou {formatMonthYear(nextDate)}</strong></>}
+          description={<><strong>{service}</strong><span>{formatMileage(numericMileage ?? selectedVehicle?.currentMileage ?? 0)} km · {formatDate(date)}</span></>}
+          details={<><span>PRÓXIMA TROCA PREVISTA</span><strong>{nextLabel}</strong></>}
           onContinue={() => router.push('/vehicle', 'back')}
         />
       ) : (
@@ -127,20 +186,20 @@ export const MaintenanceRecordPage = () => {
           </div>
 
           <RecordFormSection title="Serviço realizado">
-            <SelectField label="Sistema" name="system" value={systemId} onChange={(event) => setSystemId(event.target.value)} options={[
-              { label: 'Motor', value: 'motor' },
-              { label: 'Freios', value: 'freios' },
-              { label: 'Suspensão', value: 'suspensao' },
-              { label: 'Elétrica', value: 'eletrica' },
-            ]} />
+            <SelectField label="Sistema" name="system" value={systemId} onChange={(event) => {
+              setSystemId(event.target.value);
+              setSelected([]);
+              if (!serviceEdited) setService('');
+            }} options={vehicleSystems.map(({ catalogId, name }) => ({ label: name, value: catalogId }))} />
             <fieldset className="cb-component-selector">
               <legend>Componentes</legend>
-              {components.map((component) => (
+              {availableComponents.map((component) => (
                 <label key={component.id}>
                   <input type="checkbox" checked={selected.includes(component.id)} onChange={() => toggleComponent(component.id)} />
-                  <span>{component.label}</span>
+                  <span>{component.name}</span>
                 </label>
               ))}
+              {availableComponents.length === 0 && <p className="cb-neutral-note">Nenhum componente disponível neste sistema.</p>}
             </fieldset>
             <FormField label="Serviço" name="service" value={service} onChange={(event) => { setService(event.target.value); setServiceEdited(true); }} />
             <div className="cb-form-grid">
@@ -149,7 +208,7 @@ export const MaintenanceRecordPage = () => {
             </div>
           </RecordFormSection>
 
-          {selected.includes('engine-oil') && (
+          {oilComponent && (
             <RecordFormSection title="Peças e produtos" description="Óleo do motor">
               <div className="cb-form-grid">
                 <FormField label="Viscosidade" name="viscosity" value={viscosity} onChange={(event) => setViscosity(event.target.value)} />
@@ -157,9 +216,7 @@ export const MaintenanceRecordPage = () => {
               </div>
               <FormField label="Marca / Produto" name="product" value={product} onChange={(event) => setProduct(event.target.value)} />
               <FormField label="Quantidade" name="quantity" value={quantity} onChange={(event) => setQuantity(event.target.value)} endAdornment="L" inputMode="decimal" />
-              {selected.includes('oil-filter') && (
-                <button className="cb-inline-action" type="button"><Plus size={17} /> Adicionar detalhes do filtro</button>
-              )}
+              {hasOilFilter && <button className="cb-inline-action" type="button"><Plus size={17} /> Adicionar detalhes do filtro</button>}
             </RecordFormSection>
           )}
 
@@ -174,9 +231,9 @@ export const MaintenanceRecordPage = () => {
 
           <RecordFormSection title="Próxima manutenção" action={<button className="cb-text-action" type="button">Editar intervalo</button>}>
             <div className="cb-maintenance-preview">
-              <div><span>Intervalo</span><strong>10.000 km ou 12 meses</strong></div>
+              <div><span>Intervalo</span><strong>{intervalLabel}</strong></div>
               <ChevronRight size={18} aria-hidden="true" />
-              <div><span>Próxima troca prevista</span><strong>{formatMileage(nextMileage ?? currentMileage)} km ou {formatMonthYear(nextDate)}</strong></div>
+              <div><span>Próxima troca prevista</span><strong>{nextLabel}</strong></div>
             </div>
           </RecordFormSection>
 

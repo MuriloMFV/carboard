@@ -1,0 +1,78 @@
+.cb-auth-content {
+  --background: var(--cb-background);
+}
+
+.cb-auth-layout {
+  display: grid;
+  align-content: center;
+  width: min(100%, 430px);
+  min-height: 100%;
+  padding: 32px 20px;
+  margin: 0 auto;
+}
+
+.cb-auth-logo {
+  width: min(240px, 72vw);
+  margin: 0 auto 42px;
+}
+
+.cb-auth-card {
+  display: grid;
+  gap: 22px;
+  padding: 24px;
+}
+
+.cb-auth-copy h1 {
+  margin: 0 0 8px;
+  font-size: 1.75rem;
+}
+
+.cb-auth-copy p,
+.cb-auth-switch {
+  margin: 0;
+  color: var(--cb-text-muted);
+  line-height: 1.5;
+}
+
+.cb-auth-form {
+  display: grid;
+  gap: 16px;
+}
+
+.cb-auth-error,
+.cb-auth-success {
+  padding: 12px;
+  margin: 0;
+  border-radius: var(--cb-radius-sm);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.cb-auth-error {
+  color: var(--cb-critical);
+  background: color-mix(in srgb, var(--cb-critical) 8%, white);
+}
+
+.cb-auth-success {
+  color: var(--cb-success);
+  background: color-mix(in srgb, var(--cb-success) 8%, white);
+}
+
+.cb-auth-switch {
+  text-align: center;
+}
+
+.cb-auth-switch a {
+  color: var(--cb-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cb-flow-loading {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding: 24px;
+  color: var(--cb-text-muted);
+  text-align: center;
+}

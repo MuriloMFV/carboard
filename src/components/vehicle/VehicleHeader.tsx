@@ -23,15 +23,17 @@ export const VehicleHeader = ({ vehicle, showImage = false }: VehicleHeaderProps
     );
   }
 
-  const shortEngine = vehicle.engine?.split(' ')[0];
+  const engineDescription = [vehicle.engine, vehicle.version]
+    .filter((value, index, values) => value && values.indexOf(value) === index)
+    .join(' · ');
   return (
     <section className="cb-vehicle-header cb-vehicle-header--detailed" aria-labelledby="vehicle-name">
       <div className="cb-vehicle-header__copy">
         <h1 id="vehicle-name">{name}</h1>
-        <p>{vehicle.brand} {vehicle.model}{shortEngine ? ` ${shortEngine}` : ''} · {vehicle.year}</p>
+        <p>{vehicle.brand} {vehicle.model}{engineDescription ? ` ${engineDescription}` : ''} · {vehicle.year}</p>
         <strong>{formatMileage(vehicle.currentMileage)} <small>km</small></strong>
       </div>
-      <div className="cb-vehicle-image" role="img" aria-label="Volkswagen Gol prata">
+      <div className="cb-vehicle-image" role="img" aria-label={`Ilustração de ${vehicle.brand} ${vehicle.model}`}>
         <img src={vehicleReference} alt="" aria-hidden="true" />
       </div>
     </section>

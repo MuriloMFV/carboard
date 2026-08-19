@@ -5,7 +5,7 @@ import { FocusedHeader } from '../../../components/layout/FocusedHeader';
 import { PageContainer } from '../../../components/layout/PageContainer';
 import { QuickActionSheet } from '../../../components/ui';
 import { formatMileage } from '../../../utils/formatters';
-import { mockVehicle } from '../mocks';
+import { useVehicle } from '../VehicleContext';
 import '../vehicle.css';
 
 interface VehicleDetailShellProps extends PropsWithChildren {
@@ -15,13 +15,16 @@ interface VehicleDetailShellProps extends PropsWithChildren {
 
 export const VehicleDetailShell = ({ title, fallbackPath, children }: VehicleDetailShellProps) => {
   const [isQuickActionOpen, setQuickActionOpen] = useState(false);
+  const { selectedVehicle } = useVehicle();
+
+  if (!selectedVehicle) return null;
 
   return (
     <IonPage className="cb-vehicle-page">
       <FocusedHeader title={title} fallbackPath={fallbackPath} />
       <IonContent className="cb-content cb-vehicle-content">
         <div className="cb-detail-vehicle-context">
-          {mockVehicle.nickname} · {formatMileage(mockVehicle.currentMileage)} km
+          {selectedVehicle.nickname || `${selectedVehicle.brand} ${selectedVehicle.model}`} · {formatMileage(selectedVehicle.currentMileage)} km
         </div>
         <PageContainer className="cb-vehicle-container cb-vehicle-detail-container">
           {children}

@@ -2,6 +2,7 @@ import { Card } from '../../../components/ui';
 import { formatMileage } from '../../../utils/formatters';
 import type { NextMaintenanceResult } from '../domain/calculateNextMaintenance';
 import type { VehicleComponent } from '../types';
+import { componentStatusLabels } from '../status';
 import { VehicleIcon } from './VehicleIcon';
 
 interface MaintenanceForecastProps {
@@ -15,15 +16,18 @@ export const MaintenanceForecast = ({ component, forecast, currentMileage }: Mai
   const progress = maintenance?.lastServiceMileage && forecast.nextMileage
     ? Math.min(100, Math.max(0, ((currentMileage - maintenance.lastServiceMileage) / (forecast.nextMileage - maintenance.lastServiceMileage)) * 100))
     : 0;
+  const remainingKm = forecast.remainingKm;
 
   return (
     <Card className="cb-maintenance-forecast">
       <div className="cb-maintenance-forecast__heading">
         <span className="cb-round-icon"><VehicleIcon name={component.icon} /></span>
         <span className="cb-section-eyebrow">{component.name}</span>
-        <strong className="cb-status-pill cb-status-pill--attention">Atenção</strong>
+        <strong className={`cb-status-pill cb-status-pill--${component.status}`}>{componentStatusLabels[component.status]}</strong>
       </div>
-      <h1>Troca recomendada em aproximadamente {formatMileage(forecast.remainingKm ?? 0)} km</h1>
+      <h1>{remainingKm !== undefined && remainingKm > 0
+        ? `Manutenção recomendada em aproximadamente ${formatMileage(remainingKm)} km`
+        : 'Manutenção recomendada'}</h1>
       {forecast.nextMileage && <p>Próxima troca aos {formatMileage(forecast.nextMileage)} km</p>}
       {maintenance?.lastServiceMileage && forecast.nextMileage && (
         <>

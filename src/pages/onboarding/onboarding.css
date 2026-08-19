@@ -666,3 +666,12 @@
     animation: none;
   }
 }
+.cb-onboarding-error {
+  padding: 12px;
+  margin: 0;
+  color: var(--cb-critical);
+  background: color-mix(in srgb, var(--cb-critical) 8%, white);
+  border-radius: var(--cb-radius-sm);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}

@@ -2,9 +2,10 @@ import { ChevronUp, Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Card, FilterChip } from '../../components/ui';
 import { ComponentRow } from '../../features/vehicles/components/ComponentRow';
+import { VehicleDataState } from '../../features/vehicles/components/VehicleDataState';
 import { VehicleMainShell } from '../../features/vehicles/components/VehicleMainShell';
-import { mockVehicleComponents, mockVehicleSystems } from '../../features/vehicles/mocks';
 import { componentStatusFilters } from '../../features/vehicles/status';
+import { useVehicle } from '../../features/vehicles/VehicleContext';
 import type { ComponentStatus } from '../../types';
 
 type StatusFilter = ComponentStatus | 'all';
@@ -15,24 +16,36 @@ const normalize = (value: string): string =>
 export const VehicleComponentsPage = () => {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
+  const {
+    vehicleComponents,
+    vehicleSystems,
+    isVehicleDataLoading,
+    vehicleDataError,
+    refreshVehicleData,
+  } = useVehicle();
 
   const filteredComponents = useMemo(() => {
     const normalizedQuery = normalize(query.trim());
-    return mockVehicleComponents.filter((component) => {
+    return vehicleComponents.filter((component) => {
       const matchesQuery = !normalizedQuery || normalize(component.name).includes(normalizedQuery);
       const matchesStatus = status === 'all' || component.status === status;
       return matchesQuery && matchesStatus;
     });
-  }, [query, status]);
+  }, [query, status, vehicleComponents]);
 
-  const groups = mockVehicleSystems
+  const groups = vehicleSystems
     .map((system) => ({
       system,
       components: filteredComponents.filter((component) => component.systemId === system.id),
     }))
     .filter((group) => group.components.length > 0);
 
-  const attentionCount = mockVehicleComponents.filter((component) => component.status === 'attention').length;
+  const attentionCount = vehicleComponents.filter((component) =>
+    component.status === 'attention' || component.status === 'critical').length;
+
+  if (isVehicleDataLoading || vehicleDataError) {
+    return <VehicleMainShell><VehicleDataState error={vehicleDataError} onRetry={() => void refreshVehicleData()} /></VehicleMainShell>;
+  }
 
   return (
     <VehicleMainShell>

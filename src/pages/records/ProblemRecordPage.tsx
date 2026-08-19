@@ -1,65 +1,80 @@
 import { useIonRouter } from '@ionic/react';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { CurrencyField, DateField, FormField, MileageField, SelectField, TextareaField } from '../../components/forms';
-import { formatMileage } from '../../utils/formatters';
 import { AttachmentButton } from '../../features/records/components/AttachmentButton';
 import { FormActions } from '../../features/records/components/FormActions';
 import { PriorityControl } from '../../features/records/components/PriorityControl';
 import { RecordFormSection } from '../../features/records/components/RecordFormSection';
 import { RecordFormShell } from '../../features/records/components/RecordFormShell';
 import { SuccessFeedback } from '../../features/records/components/SuccessFeedback';
-import { createRecordId, useRecords } from '../../features/records/RecordsContext';
+import { createProblem } from '../../features/records/services/problem.service';
 import type { RecordPriority } from '../../features/records/types';
-import { parseDecimal, parseMileage } from '../../features/records/utils';
-import { mockVehicle } from '../../features/vehicles/mocks';
+import { getTodayDate, parseDecimal, parseMileage } from '../../features/records/utils';
+import { useVehicle } from '../../features/vehicles/VehicleContext';
+import { formatMileage } from '../../utils/formatters';
 
 const priorityLabels: Record<RecordPriority, string> = { low: 'baixa', medium: 'média', high: 'alta' };
 
 export const ProblemRecordPage = () => {
   const router = useIonRouter();
-  const { addProblem, currentMileage } = useRecords();
-  const [title, setTitle] = useState('Limpador traseiro não funciona');
-  const [systemId, setSystemId] = useState('electrical');
-  const [componentName, setComponentName] = useState('Limpador traseiro');
-  const [date, setDate] = useState('2026-08-12');
-  const [mileage, setMileage] = useState(formatMileage(currentMileage));
+  const { selectedVehicle, vehicleSystems, vehicleComponents, updateVehicleMileage } = useVehicle();
+  const [title, setTitle] = useState('');
+  const [systemId, setSystemId] = useState('');
+  const [componentId, setComponentId] = useState('');
+  const [date, setDate] = useState(getTodayDate);
+  const [mileage, setMileage] = useState(() => selectedVehicle ? formatMileage(selectedVehicle.currentMileage) : '');
   const [priority, setPriority] = useState<RecordPriority>('medium');
-  const [description, setDescription] = useState('O motor não faz nenhum barulho quando aciono pelo comando.');
-  const [estimatedCost, setEstimatedCost] = useState('150');
+  const [description, setDescription] = useState('');
+  const [estimatedCost, setEstimatedCost] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    if (mileage || !selectedVehicle) return;
+    setMileage(formatMileage(selectedVehicle.currentMileage));
+  }, [mileage, selectedVehicle]);
+
+  const relatedComponents = useMemo(
+    () => systemId
+      ? vehicleComponents.filter((component) => component.systemCatalogId === systemId)
+      : vehicleComponents,
+    [systemId, vehicleComponents],
+  );
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (isSubmitting) return;
     const parsedMileage = parseMileage(mileage);
-    if (!title.trim() || !date || parsedMileage === undefined) {
+    if (!selectedVehicle || !title.trim() || !date || parsedMileage === undefined) {
       setError('Preencha o que está acontecendo, a data e a quilometragem.');
       return;
     }
 
     setError('');
     setSubmitting(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 500));
-    addProblem({
-      id: createRecordId('problem'),
-      type: 'problem',
-      vehicleId: mockVehicle.id,
-      title: title.trim(),
-      systemId: systemId === 'unknown' ? undefined : systemId,
-      componentName: componentName.trim() || undefined,
-      date,
-      mileage: parsedMileage,
-      priority,
-      status: 'open',
-      description: description.trim() || undefined,
-      estimatedCost: parseDecimal(estimatedCost),
-    });
-    setSubmitting(false);
-    setSaved(true);
+    try {
+      await createProblem({
+        vehicleId: selectedVehicle.id,
+        title: title.trim(),
+        systemId: systemId || undefined,
+        vehicleComponentId: componentId || undefined,
+        detectedAt: date,
+        mileage: parsedMileage,
+        priority,
+        description: description.trim() || undefined,
+        estimatedCost: parseDecimal(estimatedCost),
+      });
+      updateVehicleMileage(selectedVehicle.id, parsedMileage);
+      setSaved(true);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Não foi possível registrar o problema.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const systemLabel = systemId === 'electrical' ? 'Elétrica' : systemId === 'unknown' ? 'Sistema não informado' : 'Outro sistema';
+  const systemLabel = vehicleSystems.find(({ catalogId }) => catalogId === systemId)?.name ?? 'Sistema não informado';
 
   return (
     <RecordFormShell title="Registrar problema">
@@ -81,14 +96,17 @@ export const ProblemRecordPage = () => {
 
           <RecordFormSection>
             <FormField label="O que está acontecendo?" name="title" value={title} onChange={(event) => setTitle(event.target.value)} />
-            <SelectField label="Sistema relacionado" name="system" value={systemId} onChange={(event) => setSystemId(event.target.value)} options={[
-              { label: 'Elétrica', value: 'electrical' },
-              { label: 'Motor', value: 'engine' },
-              { label: 'Freios', value: 'brakes' },
-              { label: 'Suspensão', value: 'suspension' },
-              { label: 'Não sei', value: 'unknown' },
+            <SelectField label="Sistema relacionado" name="system" value={systemId} onChange={(event) => {
+              setSystemId(event.target.value);
+              setComponentId('');
+            }} options={[
+              { label: 'Não sei', value: '' },
+              ...vehicleSystems.map(({ catalogId, name }) => ({ label: name, value: catalogId })),
             ]} />
-            <FormField label="Componente" name="component" value={componentName} onChange={(event) => setComponentName(event.target.value)} />
+            <SelectField label="Componente" name="component" value={componentId} onChange={(event) => setComponentId(event.target.value)} options={[
+              { label: 'Não informado', value: '' },
+              ...relatedComponents.map(({ id, name }) => ({ label: name, value: id })),
+            ]} />
             <div className="cb-form-grid">
               <DateField label="Data" name="date" value={date} onChange={(event) => setDate(event.target.value)} />
               <MileageField name="mileage" value={mileage} onChange={(event) => setMileage(event.target.value)} />

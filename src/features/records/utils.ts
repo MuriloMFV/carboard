@@ -19,3 +19,10 @@ export const formatDecimalInput = (value: number | undefined, digits = 2): strin
       minimumFractionDigits: digits,
       maximumFractionDigits: digits,
     }).format(value);
+
+export const getTodayDate = (): string => {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${today.getFullYear()}-${month}-${day}`;
+};

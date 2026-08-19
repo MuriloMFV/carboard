@@ -17,6 +17,7 @@ export type VehicleIconName =
 
 export interface VehicleSystem {
   id: string;
+  catalogId: string;
   name: string;
   icon: VehicleIconName;
   componentCount: number;
@@ -26,16 +27,6 @@ export interface VehicleSystem {
   noDataCount: number;
 }
 
-export interface MaintenanceHistoryRecord {
-  id: string;
-  title: string;
-  date: string;
-  mileage: number;
-  cost: number;
-  productSummary?: string;
-  workshop?: string;
-}
-
 export interface ComponentMaintenanceData {
   lastServiceDate?: string;
   lastServiceMileage?: number;
@@ -43,28 +34,22 @@ export interface ComponentMaintenanceData {
   intervalMonths?: number;
 }
 
-export interface ComponentProductData {
-  name: string;
-  viscosity?: string;
-  type?: string;
-  quantity?: string;
-}
-
 export interface VehicleComponent {
   id: string;
   systemId: string;
+  systemCatalogId: string;
+  catalogComponentId?: string;
+  catalogSlug?: string;
   name: string;
   icon: VehicleIconName;
   status: ComponentStatus;
   summary: string;
   maintenance?: ComponentMaintenanceData;
-  product?: ComponentProductData;
-  history?: MaintenanceHistoryRecord[];
   notes?: string;
 }
 
 export interface VehicleHealthSummary {
-  percentage: number;
+  percentage?: number;
   label: string;
   goodCount: number;
   attentionCount: number;
@@ -78,11 +63,7 @@ export interface VehicleAttentionItem {
   icon: VehicleIconName;
 }
 
-export interface VehicleMetadata {
-  fuelType: string;
-  plate?: string;
-  renavam?: string;
-  licensingYear?: number;
-  insurance?: string;
-  addedAt: string;
+export interface VehicleData {
+  systems: VehicleSystem[];
+  components: VehicleComponent[];
 }

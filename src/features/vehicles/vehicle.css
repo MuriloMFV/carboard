@@ -472,6 +472,24 @@
   text-align: center;
 }
 
+.cb-vehicle-data-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px 20px;
+  color: #6d7586;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.cb-vehicle-data-state p {
+  margin: 0;
+}
+
+.cb-vehicle-data-state .cb-button {
+  width: min(100%, 240px);
+}
+
 /* Information */
 .cb-info-screen {
   gap: 24px;
@@ -747,6 +765,24 @@
   color: #f08a00;
   background: #fff8e8;
   border-color: #f6c451;
+}
+
+.cb-status-pill--good {
+  color: #006bdc;
+  background: #eaf4ff;
+  border-color: #9bc9f8;
+}
+
+.cb-status-pill--critical {
+  color: var(--cb-critical);
+  background: #fff0f0;
+  border-color: #f4aaaa;
+}
+
+.cb-status-pill--no_data {
+  color: #737b8d;
+  background: #f4f6f9;
+  border-color: #cdd3dd;
 }
 
 .cb-maintenance-forecast h1 {

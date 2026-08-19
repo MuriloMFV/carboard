@@ -3,8 +3,7 @@ import type { PropsWithChildren } from 'react';
 import { FocusedHeader } from '../../../components/layout/FocusedHeader';
 import { PageContainer } from '../../../components/layout/PageContainer';
 import { formatMileage } from '../../../utils/formatters';
-import { mockVehicle } from '../../vehicles/mocks';
-import { useRecords } from '../RecordsContext';
+import { useVehicle } from '../../vehicles/VehicleContext';
 import '../records.css';
 
 interface RecordFormShellProps extends PropsWithChildren {
@@ -12,14 +11,17 @@ interface RecordFormShellProps extends PropsWithChildren {
 }
 
 export const RecordFormShell = ({ title, children }: RecordFormShellProps) => {
-  const { currentMileage } = useRecords();
+  const { selectedVehicle } = useVehicle();
+  const vehicleName = selectedVehicle?.nickname
+    || [selectedVehicle?.brand, selectedVehicle?.model].filter(Boolean).join(' ')
+    || 'Meu carro';
 
   return (
     <IonPage className="cb-record-page">
       <FocusedHeader
         title={title}
         fallbackPath="/home"
-        context={`${mockVehicle.nickname} · ${formatMileage(currentMileage)} km`}
+        context={selectedVehicle ? `${vehicleName} · ${formatMileage(selectedVehicle.currentMileage)} km` : vehicleName}
       />
       <IonContent className="cb-content cb-record-content">
         <PageContainer className="cb-record-container">{children}</PageContainer>

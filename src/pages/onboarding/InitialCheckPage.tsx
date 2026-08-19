@@ -1,9 +1,11 @@
 import { IonContent, IonPage } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
+import { useState } from 'react';
 import { Divider, PrimaryButton } from '../../components/ui';
 import { OnboardingStepHeader } from '../../features/onboarding/components/OnboardingStepHeader';
 import { SelectionCard } from '../../features/onboarding/components/SelectionCard';
 import { useOnboarding } from '../../features/onboarding/OnboardingContext';
+import { useVehicle } from '../../features/vehicles/VehicleContext';
 import { currentProblemOptions, oilChangeOptions, tireConditionOptions } from '../../features/onboarding/options';
 import type { TireCondition } from '../../features/onboarding/types';
 import './onboarding.css';
@@ -18,8 +20,27 @@ const tireIcon: Record<TireCondition, 'good' | 'mid' | 'danger' | 'unknown'> = {
 export const InitialCheckPage = () => {
   const history = useHistory();
   const { data, updateInitialCheck } = useOnboarding();
+  const { createVehicle } = useVehicle();
   const { initialCheck } = data;
-  const complete = () => history.push('/onboarding/complete');
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const complete = async () => {
+    if (isSubmitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await createVehicle(data);
+      history.replace('/onboarding/complete');
+    } catch (submitError) {
+      const message = submitError instanceof Error ? submitError.message : '';
+      setError(message.toLowerCase().includes('fetch')
+        ? 'Sem conexão. Seus dados continuam preenchidos; tente novamente.'
+        : 'Não foi possível salvar seu veículo. Revise os dados e tente novamente.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <IonPage className="cb-onboarding-page cb-initial-check-page">
@@ -80,8 +101,13 @@ export const InitialCheckPage = () => {
           </section>
 
           <div className="cb-check-actions">
-            <PrimaryButton onClick={complete}>Finalizar configuração</PrimaryButton>
-            <button className="cb-text-button" type="button" onClick={complete}>Pular por enquanto</button>
+            {error && <p className="cb-onboarding-error" role="alert">{error}</p>}
+            <PrimaryButton onClick={() => void complete()} disabled={isSubmitting}>
+              {isSubmitting ? 'Salvando...' : 'Finalizar configuração'}
+            </PrimaryButton>
+            <button className="cb-text-button" type="button" onClick={() => void complete()} disabled={isSubmitting}>
+              Pular por enquanto
+            </button>
           </div>
         </main>
       </IonContent>

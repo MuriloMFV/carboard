@@ -1,35 +1,40 @@
 import { useIonRouter } from '@ionic/react';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { DateField, FormField, MileageField, TextareaField } from '../../components/forms';
 import { SegmentedControl } from '../../components/ui';
-import { formatCurrency, formatMileage } from '../../utils/formatters';
 import { AttachmentButton } from '../../features/records/components/AttachmentButton';
 import { FormActions } from '../../features/records/components/FormActions';
 import { RecordFormSection } from '../../features/records/components/RecordFormSection';
 import { RecordFormShell } from '../../features/records/components/RecordFormShell';
 import { SuccessFeedback } from '../../features/records/components/SuccessFeedback';
 import { calculateFuelEconomy, calculateFuelValues } from '../../features/records/domain/calculateFuelValues';
-import { createRecordId, useRecords } from '../../features/records/RecordsContext';
+import { createFuelRecord, getPreviousFullTankMileage } from '../../features/records/services/fuel.service';
 import type { FuelType } from '../../features/records/types';
-import { formatDecimalInput, parseDecimal, parseMileage } from '../../features/records/utils';
-import { mockVehicle } from '../../features/vehicles/mocks';
+import { formatDecimalInput, getTodayDate, parseDecimal, parseMileage } from '../../features/records/utils';
+import { useVehicle } from '../../features/vehicles/VehicleContext';
+import { formatCurrency, formatMileage } from '../../utils/formatters';
 
 export const FuelRecordPage = () => {
   const router = useIonRouter();
-  const { addFuel, currentMileage, previousFullTankMileage } = useRecords();
-  const [date, setDate] = useState('2026-08-12');
-  const [mileage, setMileage] = useState(formatMileage(currentMileage));
+  const { selectedVehicle, updateVehicleMileage } = useVehicle();
+  const [date, setDate] = useState(getTodayDate);
+  const [mileage, setMileage] = useState(() => selectedVehicle ? formatMileage(selectedVehicle.currentMileage) : '');
   const [fuelType, setFuelType] = useState<FuelType>('gasoline');
-  const [totalCost, setTotalCost] = useState('200,00');
-  const [liters, setLiters] = useState('34,8');
-  const [pricePerLiter, setPricePerLiter] = useState('5,75');
+  const [totalCost, setTotalCost] = useState('');
+  const [liters, setLiters] = useState('');
+  const [pricePerLiter, setPricePerLiter] = useState('');
   const [fullTank, setFullTank] = useState(true);
-  const [station, setStation] = useState('Posto Ipiranga');
+  const [station, setStation] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
   const [savedEconomy, setSavedEconomy] = useState<{ distance: number; kmPerLiter: number }>();
+
+  useEffect(() => {
+    if (mileage || !selectedVehicle) return;
+    setMileage(formatMileage(selectedVehicle.currentMileage));
+  }, [mileage, selectedVehicle]);
 
   const fillCalculatedValue = () => {
     const values = calculateFuelValues({
@@ -44,41 +49,52 @@ export const FuelRecordPage = () => {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (isSubmitting) return;
     const parsedMileage = parseMileage(mileage);
     const values = calculateFuelValues({
       totalCost: parseDecimal(totalCost),
       liters: parseDecimal(liters),
       pricePerLiter: parseDecimal(pricePerLiter),
     });
-    const availableValues = [values.totalCost, values.liters, values.pricePerLiter].filter((value) => value !== undefined && value > 0).length;
-    if (!date || parsedMileage === undefined || availableValues < 2) {
+    const availableValues = [values.totalCost, values.liters, values.pricePerLiter]
+      .filter((value) => value !== undefined && value > 0).length;
+    if (!selectedVehicle || !date || parsedMileage === undefined || availableValues < 2) {
       setError('Preencha data, quilometragem e pelo menos dois valores do abastecimento.');
       return;
     }
 
     setError('');
     setSubmitting(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 500));
-    addFuel({
-      id: createRecordId('fuel'),
-      type: 'fuel',
-      vehicleId: mockVehicle.id,
-      date,
-      mileage: parsedMileage,
-      fuelType,
-      totalCost: values.totalCost,
-      liters: values.liters,
-      pricePerLiter: values.pricePerLiter,
-      fullTank,
-      station: station.trim() || undefined,
-      notes: notes.trim() || undefined,
-    });
-    setSavedEconomy(calculateFuelEconomy(previousFullTankMileage, parsedMileage, values.liters, fullTank));
-    setTotalCost(formatDecimalInput(values.totalCost));
-    setLiters(formatDecimalInput(values.liters, 1));
-    setPricePerLiter(formatDecimalInput(values.pricePerLiter, 2));
-    setSubmitting(false);
-    setSaved(true);
+    try {
+      let previousFullTankMileage: number | undefined;
+      try {
+        previousFullTankMileage = await getPreviousFullTankMileage(selectedVehicle.id, parsedMileage);
+      } catch {
+        previousFullTankMileage = undefined;
+      }
+      await createFuelRecord({
+        vehicleId: selectedVehicle.id,
+        fueledAt: date,
+        mileage: parsedMileage,
+        fuelType,
+        totalCost: values.totalCost,
+        liters: values.liters,
+        pricePerLiter: values.pricePerLiter,
+        fullTank,
+        station: station.trim() || undefined,
+        notes: notes.trim() || undefined,
+      });
+      updateVehicleMileage(selectedVehicle.id, parsedMileage);
+      setSavedEconomy(calculateFuelEconomy(previousFullTankMileage, parsedMileage, values.liters, fullTank));
+      setTotalCost(formatDecimalInput(values.totalCost));
+      setLiters(formatDecimalInput(values.liters, 1));
+      setPricePerLiter(formatDecimalInput(values.pricePerLiter, 2));
+      setSaved(true);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Não foi possível salvar o abastecimento.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const savedLiters = parseDecimal(liters);
@@ -90,7 +106,7 @@ export const FuelRecordPage = () => {
         <SuccessFeedback
           type="fuel"
           title="Abastecimento registrado!"
-          description={<><strong>{formatDecimalInput(savedLiters, 1)} L de {fuelType === 'gasoline' ? 'gasolina' : 'etanol'}</strong><span>{savedCost === undefined ? 'Sem valor' : formatCurrency(savedCost)} · {formatMileage(parseMileage(mileage) ?? currentMileage)} km</span></>}
+          description={<><strong>{formatDecimalInput(savedLiters, 1)} L de {fuelType === 'gasoline' ? 'gasolina' : 'etanol'}</strong><span>{savedCost === undefined ? 'Sem valor' : formatCurrency(savedCost)} · {formatMileage(parseMileage(mileage) ?? selectedVehicle?.currentMileage ?? 0)} km</span></>}
           details={savedEconomy && <><span>CONSUMO DESTE PERÍODO</span><strong>{formatDecimalInput(savedEconomy.kmPerLiter, 1)} km/L</strong><small>{formatMileage(savedEconomy.distance)} km desde o último abastecimento</small></>}
           onContinue={() => router.push('/home', 'back')}
         />

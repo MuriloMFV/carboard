@@ -7,21 +7,21 @@ import { PriorityControl } from '../../features/records/components/PriorityContr
 import { RecordFormSection } from '../../features/records/components/RecordFormSection';
 import { RecordFormShell } from '../../features/records/components/RecordFormShell';
 import { SuccessFeedback } from '../../features/records/components/SuccessFeedback';
-import { createRecordId, useRecords } from '../../features/records/RecordsContext';
+import { createImprovement } from '../../features/records/services/improvement.service';
 import type { RecordPriority } from '../../features/records/types';
 import { parseDecimal } from '../../features/records/utils';
-import { mockVehicle } from '../../features/vehicles/mocks';
+import { useVehicle } from '../../features/vehicles/VehicleContext';
 
 const priorityLabels: Record<RecordPriority, string> = { low: 'baixa', medium: 'média', high: 'alta' };
 
 export const ImprovementRecordPage = () => {
   const router = useIonRouter();
-  const { addImprovement } = useRecords();
-  const [title, setTitle] = useState('Alto-falantes das portas');
+  const { selectedVehicle } = useVehicle();
+  const [title, setTitle] = useState('');
   const [category, setCategory] = useState('audio');
   const [priority, setPriority] = useState<RecordPriority>('medium');
-  const [estimatedBudget, setEstimatedBudget] = useState('280');
-  const [productName, setProductName] = useState('Kit alto-falantes 6"');
+  const [estimatedBudget, setEstimatedBudget] = useState('');
+  const [productName, setProductName] = useState('');
   const [productUrl, setProductUrl] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
@@ -30,30 +30,31 @@ export const ImprovementRecordPage = () => {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!title.trim()) {
+    if (isSubmitting) return;
+    if (!selectedVehicle || !title.trim()) {
       setError('Informe o que você quer melhorar.');
       return;
     }
 
     setError('');
     setSubmitting(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 500));
-    addImprovement({
-      id: createRecordId('improvement'),
-      type: 'improvement',
-      vehicleId: mockVehicle.id,
-      title: title.trim(),
-      date: new Date().toISOString().slice(0, 10),
-      category,
-      priority,
-      status: 'planned',
-      estimatedBudget: parseDecimal(estimatedBudget),
-      productName: productName.trim() || undefined,
-      productUrl: productUrl.trim() || undefined,
-      notes: notes.trim() || undefined,
-    });
-    setSubmitting(false);
-    setSaved(true);
+    try {
+      await createImprovement({
+        vehicleId: selectedVehicle.id,
+        title: title.trim(),
+        category,
+        priority,
+        estimatedBudget: parseDecimal(estimatedBudget),
+        productName: productName.trim() || undefined,
+        productUrl: productUrl.trim() || undefined,
+        notes: notes.trim() || undefined,
+      });
+      setSaved(true);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Não foi possível salvar a melhoria.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

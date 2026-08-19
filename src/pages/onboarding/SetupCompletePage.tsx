@@ -2,13 +2,13 @@ import { IonContent, IonPage } from '@ionic/react';
 import { CarFront, Check, ClipboardCheck } from 'lucide-react';
 import { useHistory } from 'react-router-dom';
 import { PrimaryButton } from '../../components/ui';
-import { useOnboarding } from '../../features/onboarding/OnboardingContext';
+import { useVehicle } from '../../features/vehicles/VehicleContext';
 import './onboarding.css';
 
 export const SetupCompletePage = () => {
   const history = useHistory();
-  const { data } = useOnboarding();
-  const vehicleName = data.vehicle.nickname || `${data.vehicle.brand} ${data.vehicle.model}`;
+  const { selectedVehicle } = useVehicle();
+  const vehicleName = selectedVehicle?.nickname || `${selectedVehicle?.brand} ${selectedVehicle?.model}`;
 
   return (
     <IonPage className="cb-onboarding-page cb-complete-page">
@@ -25,7 +25,7 @@ export const SetupCompletePage = () => {
           <section className="cb-complete-checklist" aria-label="Resumo da configuração">
             <div><span>{vehicleName} configurado</span><Check size={16} aria-hidden="true" /></div>
             <div><span>Quilometragem sincronizada</span><Check size={16} aria-hidden="true" /></div>
-            <div><span>Histórico de manutenções</span><Check size={16} aria-hidden="true" /></div>
+            <div><span>Componentes preparados</span><Check size={16} aria-hidden="true" /></div>
           </section>
           <div className="cb-complete-status">
             <span>Tudo pronto...</span>

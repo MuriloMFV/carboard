@@ -3,8 +3,9 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { MileageField } from '../../../components/forms';
 import { PrimaryButton } from '../../../components/ui';
 import { formatMileage } from '../../../utils/formatters';
-import { useRecords } from '../RecordsContext';
-import { parseMileage } from '../utils';
+import { useVehicle } from '../../vehicles/VehicleContext';
+import { updateVehicleMileageIfGreater } from '../services/mileage.service';
+import { getTodayDate, parseMileage } from '../utils';
 import { SuccessFeedback } from './SuccessFeedback';
 import '../records.css';
 
@@ -14,7 +15,8 @@ interface MileageUpdateSheetProps {
 }
 
 export const MileageUpdateSheet = ({ isOpen, onDismiss }: MileageUpdateSheetProps) => {
-  const { currentMileage, updateMileage } = useRecords();
+  const { selectedVehicle, updateVehicleMileage, refreshVehicles } = useVehicle();
+  const currentMileage = selectedVehicle?.currentMileage ?? 0;
   const [value, setValue] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
@@ -38,9 +40,32 @@ export const MileageUpdateSheet = ({ isOpen, onDismiss }: MileageUpdateSheetProp
     setError('');
     setSubmitting(true);
     await new Promise((resolve) => window.setTimeout(resolve, 450));
-    const record = updateMileage(nextMileage);
-    setSubmitting(false);
-    if (record) setUpdatedRange({ previous: record.previousMileage, next: record.mileage });
+    if (!selectedVehicle) {
+      setError('Nenhum veículo selecionado.');
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      const updated = await updateVehicleMileageIfGreater({
+        vehicleId: selectedVehicle.id,
+        currentMileage,
+        candidateMileage: nextMileage,
+        sourceType: 'manual',
+        recordedAt: getTodayDate(),
+      });
+      if (!updated) {
+        await refreshVehicles();
+        setError('A quilometragem informada precisa ser maior que a atual.');
+        return;
+      }
+      updateVehicleMileage(selectedVehicle.id, nextMileage);
+      setUpdatedRange({ previous: currentMileage, next: nextMileage });
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Não foi possível atualizar a quilometragem.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

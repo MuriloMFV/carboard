@@ -2,11 +2,13 @@ import { IonContent, IonPage } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import logo from '../../assets/logotexto.png';
 import { LottieAnimation, PrimaryButton } from '../../components/ui';
+import { useAuth } from '../../features/auth/AuthContext';
 import carAnimation from '../../../docs/design/onboarding/Mr Bean\'s Mini.json';
 import './onboarding.css';
 
 export const WelcomePage = () => {
   const history = useHistory();
+  const { signOut } = useAuth();
 
   return (
     <IonPage className="cb-onboarding-page cb-welcome-page">
@@ -22,7 +24,9 @@ export const WelcomePage = () => {
           </section>
           <div className="cb-welcome-actions">
             <PrimaryButton onClick={() => history.push('/onboarding/vehicle')}>Adicionar meu carro</PrimaryButton>
-            <span>Já tenho uma conta</span>
+            <button className="cb-text-button" type="button" onClick={() => void signOut()}>
+              Entrar com outra conta
+            </button>
           </div>
         </main>
       </IonContent>
