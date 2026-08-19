@@ -1,15 +1,13 @@
 import { IonContent, IonPage } from '@ionic/react';
-import { useState } from 'react';
 import { AppHeader } from '../components/layout/AppHeader';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { PageContainer } from '../components/layout/PageContainer';
-import { Card, QuickActionSheet, SecondaryButton, StatusText } from '../components/ui';
+import { Card, SecondaryButton, StatusText } from '../components/ui';
 import { VehicleHeader } from '../components/vehicle/VehicleHeader';
 import { useAuth } from '../features/auth/AuthContext';
 import { useVehicle } from '../features/vehicles/VehicleContext';
 
 export const HomePage = () => {
-  const [isQuickActionOpen, setQuickActionOpen] = useState(false);
   const { signOut } = useAuth();
   const { selectedVehicle } = useVehicle();
 
@@ -35,8 +33,7 @@ export const HomePage = () => {
           </Card>
         </PageContainer>
       </IonContent>
-      <BottomNavigation onQuickAction={() => setQuickActionOpen(true)} />
-      <QuickActionSheet isOpen={isQuickActionOpen} onDismiss={() => setQuickActionOpen(false)} />
+      <BottomNavigation />
     </IonPage>
   );
 };

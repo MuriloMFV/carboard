@@ -1,9 +1,8 @@
 import { IonContent, IonPage } from '@ionic/react';
-import { useState } from 'react';
 import { AppHeader } from '../components/layout/AppHeader';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { PageContainer } from '../components/layout/PageContainer';
-import { Card, QuickActionSheet } from '../components/ui';
+import { Card } from '../components/ui';
 
 interface MainPlaceholderPageProps {
   title: string;
@@ -11,8 +10,6 @@ interface MainPlaceholderPageProps {
 }
 
 export const MainPlaceholderPage = ({ title, description }: MainPlaceholderPageProps) => {
-  const [isQuickActionOpen, setQuickActionOpen] = useState(false);
-
   return (
     <IonPage>
       <AppHeader />
@@ -24,8 +21,7 @@ export const MainPlaceholderPage = ({ title, description }: MainPlaceholderPageP
           </Card>
         </PageContainer>
       </IonContent>
-      <BottomNavigation onQuickAction={() => setQuickActionOpen(true)} />
-      <QuickActionSheet isOpen={isQuickActionOpen} onDismiss={() => setQuickActionOpen(false)} />
+      <BottomNavigation />
     </IonPage>
   );
 };

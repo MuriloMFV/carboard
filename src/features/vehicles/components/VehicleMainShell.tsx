@@ -1,16 +1,14 @@
 import { IonContent, IonPage } from '@ionic/react';
-import { useState, type PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 import { AppHeader } from '../../../components/layout/AppHeader';
 import { BottomNavigation } from '../../../components/layout/BottomNavigation';
 import { PageContainer } from '../../../components/layout/PageContainer';
-import { QuickActionSheet } from '../../../components/ui';
 import { VehicleHeader } from '../../../components/vehicle/VehicleHeader';
 import { useVehicle } from '../VehicleContext';
 import { VehicleTabs } from './VehicleTabs';
 import '../vehicle.css';
 
 export const VehicleMainShell = ({ children }: PropsWithChildren) => {
-  const [isQuickActionOpen, setQuickActionOpen] = useState(false);
   const { selectedVehicle } = useVehicle();
 
   if (!selectedVehicle) return null;
@@ -25,8 +23,7 @@ export const VehicleMainShell = ({ children }: PropsWithChildren) => {
           {children}
         </PageContainer>
       </IonContent>
-      <BottomNavigation onQuickAction={() => setQuickActionOpen(true)} />
-      <QuickActionSheet isOpen={isQuickActionOpen} onDismiss={() => setQuickActionOpen(false)} />
+      <BottomNavigation />
     </IonPage>
   );
 };

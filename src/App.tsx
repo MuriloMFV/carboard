@@ -2,6 +2,8 @@ import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route } from 'react-router-dom';
 import type { ComponentType } from 'react';
+import { AppShellProvider } from './components/layout/AppShellContext';
+import { APP_CONTENT_ID } from './components/layout/appShell.constants';
 import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import { OnboardingProvider } from './features/onboarding/OnboardingContext';
 import { VehicleProvider, useVehicle } from './features/vehicles/VehicleContext';
@@ -86,33 +88,35 @@ const FlowRedirect = () => {
 
 const AppRouter = () => (
   <IonReactRouter>
-    <IonRouterOutlet>
-      <AuthRoute exact path="/auth/login" component={LoginPage} />
-      <AuthRoute exact path="/auth/signup" component={SignUpPage} />
+    <AppShellProvider>
+      <IonRouterOutlet id={APP_CONTENT_ID}>
+        <AuthRoute exact path="/auth/login" component={LoginPage} />
+        <AuthRoute exact path="/auth/signup" component={SignUpPage} />
 
-      <GuardedRoute exact path="/onboarding" component={WelcomePage} onboardingOnly />
-      <GuardedRoute exact path="/onboarding/vehicle" component={VehicleIdentificationPage} onboardingOnly />
-      <GuardedRoute exact path="/onboarding/mileage" component={MileagePage} onboardingOnly />
-      <GuardedRoute exact path="/onboarding/initial-check" component={InitialCheckPage} onboardingOnly />
-      <GuardedRoute exact path="/onboarding/complete" component={SetupCompletePage} requiresVehicle />
+        <GuardedRoute exact path="/onboarding" component={WelcomePage} onboardingOnly />
+        <GuardedRoute exact path="/onboarding/vehicle" component={VehicleIdentificationPage} onboardingOnly />
+        <GuardedRoute exact path="/onboarding/mileage" component={MileagePage} onboardingOnly />
+        <GuardedRoute exact path="/onboarding/initial-check" component={InitialCheckPage} onboardingOnly />
+        <GuardedRoute exact path="/onboarding/complete" component={SetupCompletePage} requiresVehicle />
 
-      <GuardedRoute exact path="/home" component={HomePage} requiresVehicle />
-      <GuardedRoute exact path="/vehicle" component={VehicleOverviewPage} requiresVehicle />
-      <GuardedRoute exact path="/vehicle/components" component={VehicleComponentsPage} requiresVehicle />
-      <GuardedRoute exact path="/vehicle/info" component={VehicleInfoPage} requiresVehicle />
-      <GuardedRoute exact path="/vehicle/system/:systemId" component={VehicleSystemPage} requiresVehicle />
-      <GuardedRoute exact path="/vehicle/component/:componentId" component={VehicleComponentPage} requiresVehicle />
+        <GuardedRoute exact path="/home" component={HomePage} requiresVehicle />
+        <GuardedRoute exact path="/vehicle" component={VehicleOverviewPage} requiresVehicle />
+        <GuardedRoute exact path="/vehicle/components" component={VehicleComponentsPage} requiresVehicle />
+        <GuardedRoute exact path="/vehicle/info" component={VehicleInfoPage} requiresVehicle />
+        <GuardedRoute exact path="/vehicle/system/:systemId" component={VehicleSystemPage} requiresVehicle />
+        <GuardedRoute exact path="/vehicle/component/:componentId" component={VehicleComponentPage} requiresVehicle />
 
-      <GuardedRoute exact path="/register/maintenance" component={MaintenanceRecordPage} requiresVehicle />
-      <GuardedRoute exact path="/register/fuel" component={FuelRecordPage} requiresVehicle />
-      <GuardedRoute exact path="/register/problem" component={ProblemRecordPage} requiresVehicle />
-      <GuardedRoute exact path="/register/improvement" component={ImprovementRecordPage} requiresVehicle />
+        <GuardedRoute exact path="/register/maintenance" component={MaintenanceRecordPage} requiresVehicle />
+        <GuardedRoute exact path="/register/fuel" component={FuelRecordPage} requiresVehicle />
+        <GuardedRoute exact path="/register/problem" component={ProblemRecordPage} requiresVehicle />
+        <GuardedRoute exact path="/register/improvement" component={ImprovementRecordPage} requiresVehicle />
 
-      <GuardedRoute exact path="/expenses" component={ExpensesPage} requiresVehicle />
-      <GuardedRoute exact path="/history" component={HistoryPage} requiresVehicle />
-      <Route exact path="/" component={FlowRedirect} />
-      <Route component={FlowRedirect} />
-    </IonRouterOutlet>
+        <GuardedRoute exact path="/expenses" component={ExpensesPage} requiresVehicle />
+        <GuardedRoute exact path="/history" component={HistoryPage} requiresVehicle />
+        <Route exact path="/" component={FlowRedirect} />
+        <Route component={FlowRedirect} />
+      </IonRouterOutlet>
+    </AppShellProvider>
   </IonReactRouter>
 );
 
