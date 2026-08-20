@@ -1,6 +1,7 @@
 import { useIonRouter } from '@ionic/react';
 import { Plus } from 'lucide-react';
 import { useParams } from 'react-router-dom';
+import { useAppShell } from '../../components/layout/AppShellContext';
 import { Card, PrimaryButton } from '../../components/ui';
 import { ComponentRow } from '../../features/vehicles/components/ComponentRow';
 import { VehicleDataState } from '../../features/vehicles/components/VehicleDataState';
@@ -14,6 +15,7 @@ interface SystemRouteParams {
 
 export const VehicleSystemPage = () => {
   const router = useIonRouter();
+  const { openAddComponent } = useAppShell();
   const { systemId } = useParams<SystemRouteParams>();
   const {
     vehicleComponents,
@@ -82,7 +84,7 @@ export const VehicleSystemPage = () => {
           <Card className="cb-empty-filter-result">Sem dados de manutenção.</Card>
         </section>
 
-        <button className="cb-add-component-text" type="button" aria-disabled="true">
+        <button className="cb-add-component-text" type="button" onClick={() => openAddComponent(system.catalogId)}>
           <Plus size={16} aria-hidden="true" /> Adicionar componente ao {system.name.toLocaleLowerCase('pt-BR')}
         </button>
       </div>

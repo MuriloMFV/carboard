@@ -1,4 +1,4 @@
-import { CarFront, CircleDollarSign, History, Home, Plus } from 'lucide-react';
+import { CarFront, Home, Plus, ReceiptText, WalletCards } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import type { NavigationItem } from '../../types/navigation';
 import { useAppShell } from './AppShellContext';
@@ -7,8 +7,8 @@ import './layout.css';
 const navigationItems: NavigationItem[] = [
   { label: 'Início', path: '/home', icon: Home },
   { label: 'Meu Carro', path: '/vehicle', icon: CarFront },
-  { label: 'Gastos', path: '/expenses', icon: CircleDollarSign },
-  { label: 'Histórico', path: '/history', icon: History },
+  { label: 'Gastos', path: '/expenses', icon: WalletCards },
+  { label: 'Histórico', path: '/history', icon: ReceiptText },
 ];
 
 const NavigationLink = ({ item }: { item: NavigationItem }) => {

@@ -8,18 +8,20 @@
 .cb-toolbar {
   --background: var(--cb-primary);
   --color: white;
-  --min-height: 60px;
+  --min-height: 57px;
   --border-width: 0;
-  padding-inline: var(--cb-space-xs);
+  padding-inline: 12px;
 }
 
 .cb-toolbar ion-title {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.3rem;
+  font-weight: 750;
   letter-spacing: -0.02em;
+  text-align: center;
 }
 
 .cb-header-button {
+  position: relative;
   display: grid;
   place-items: center;
   width: 44px;
@@ -29,6 +31,24 @@
   background: transparent;
   border: 0;
   border-radius: 50%;
+}
+
+.cb-notification-badge {
+  position: absolute;
+  top: 3px;
+  right: 2px;
+  display: grid;
+  min-width: 17px;
+  height: 17px;
+  place-items: center;
+  padding: 0 4px;
+  color: white;
+  background: #d71920;
+  border: 2px solid var(--cb-primary);
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .cb-header-button:focus-visible {
@@ -59,6 +79,7 @@
   padding: 8px max(8px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px, env(safe-area-inset-left));
   background: var(--cb-surface);
   border-top: 1px solid var(--cb-border);
+  box-shadow: 0 -5px 18px rgb(39 50 74 / 7%);
   isolation: isolate;
   pointer-events: auto;
 }
@@ -70,13 +91,14 @@
   justify-content: center;
   gap: 4px;
   color: var(--cb-text-muted);
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 500;
   text-decoration: none;
 }
 
 .cb-nav-item.active {
   color: var(--cb-primary);
+  font-weight: 700;
 }
 
 .cb-quick-action-trigger {
@@ -85,14 +107,14 @@
   align-self: start;
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
-  margin: -28px auto 0;
+  width: 60px;
+  height: 60px;
+  margin: -30px auto 0;
   color: white;
   background: var(--cb-primary);
   border: 4px solid var(--cb-surface);
   border-radius: 50%;
-  box-shadow: 0 8px 20px rgb(37 99 235 / 30%);
+  box-shadow: 0 8px 20px rgb(8 127 245 / 30%);
   cursor: pointer;
   pointer-events: auto;
   touch-action: manipulation;

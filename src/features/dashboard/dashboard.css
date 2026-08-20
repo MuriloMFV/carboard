@@ -1,0 +1,528 @@
+.cb-dashboard-page,
+.cb-dashboard-content {
+  --background: var(--cb-background);
+  color: var(--cb-text);
+}
+
+.cb-dashboard-container {
+  width: min(100%, 430px);
+  padding: 19px 16px 36px;
+}
+
+.cb-dashboard-layout {
+  display: grid;
+  gap: 24px;
+}
+
+.cb-dashboard-hero {
+  position: relative;
+  min-height: 198px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--cb-border);
+}
+
+.cb-dashboard-vehicle-copy {
+  position: relative;
+  z-index: 1;
+  width: 58%;
+}
+
+.cb-dashboard-vehicle-link {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  gap: 4px;
+  padding: 0;
+  color: var(--cb-text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+}
+
+.cb-dashboard-vehicle-link strong {
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 760;
+  letter-spacing: -0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cb-dashboard-vehicle-copy > p {
+  min-height: 39px;
+  margin: 3px 0 14px;
+  color: #454b59;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.cb-dashboard-mileage-label {
+  display: block;
+  margin-bottom: 1px;
+  color: #454b59;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.cb-dashboard-mileage {
+  display: flex;
+  align-items: baseline;
+  color: #141820;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+
+.cb-dashboard-mileage strong {
+  font-size: clamp(35px, 10.5vw, 45px);
+  line-height: 1;
+}
+
+.cb-dashboard-mileage small {
+  margin-left: 5px;
+  color: #454b59;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.cb-dashboard-mileage-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 0 12px;
+  color: var(--cb-primary);
+  background: transparent;
+  border: 1px solid #9bcafc;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 650;
+  touch-action: manipulation;
+}
+
+.cb-dashboard-car {
+  position: absolute;
+  top: 18px;
+  right: -2px;
+  width: 57%;
+  height: 105px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cb-dashboard-car img {
+  position: absolute;
+  top: -86px;
+  left: -167px;
+  width: 390px;
+  max-width: none;
+}
+
+.cb-dashboard-card {
+  border-radius: 13px;
+  box-shadow: var(--cb-card-shadow);
+}
+
+.cb-dashboard-health-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  min-height: 138px;
+  padding: 16px;
+}
+
+.cb-dashboard-health,
+.cb-dashboard-attention {
+  min-width: 0;
+}
+
+.cb-dashboard-health {
+  padding-right: 15px;
+  border-right: 1px solid var(--cb-border);
+}
+
+.cb-dashboard-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--cb-primary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.012em;
+  text-transform: uppercase;
+}
+
+.cb-dashboard-health-score {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 9px;
+  color: var(--cb-primary);
+}
+
+.cb-dashboard-health-score strong {
+  font-size: 40px;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+.cb-dashboard-health-score strong small {
+  font-size: 16px;
+}
+
+.cb-dashboard-health-score > span {
+  font-size: 16px;
+  font-weight: 720;
+}
+
+.cb-dashboard-progress {
+  height: 7px;
+  margin-top: 14px;
+  overflow: hidden;
+  background: #dfe3ec;
+  border-radius: 999px;
+}
+
+.cb-dashboard-progress span {
+  display: block;
+  height: 100%;
+  background: var(--cb-primary);
+  border-radius: inherit;
+  transition: width 300ms ease;
+}
+
+.cb-dashboard-health-counts {
+  margin: 9px 0 0;
+  color: #454b59;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.cb-dashboard-health-counts em {
+  color: var(--cb-attention);
+  font-style: normal;
+}
+
+.cb-dashboard-attention {
+  display: flex;
+  flex-direction: column;
+  padding-left: 16px;
+}
+
+.cb-dashboard-attention .cb-dashboard-eyebrow {
+  color: var(--cb-attention);
+}
+
+.cb-dashboard-attention--good .cb-dashboard-eyebrow {
+  color: var(--cb-success);
+}
+
+.cb-dashboard-attention h2 {
+  margin: 11px 0 0;
+  font-size: 17px;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+}
+
+.cb-dashboard-attention p {
+  margin: 5px 0 0;
+  color: #454b59;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.cb-dashboard-detail-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 1px;
+  margin-top: auto;
+  padding: 8px 0 0;
+  color: var(--cb-primary);
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+}
+
+.cb-dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cb-dashboard-metric-card {
+  min-width: 0;
+  min-height: 216px;
+  padding: 16px;
+}
+
+.cb-dashboard-metric-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #4f5666;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.cb-dashboard-metric-value {
+  display: flex;
+  align-items: baseline;
+  margin: 23px 0 0;
+  color: #141820;
+  white-space: nowrap;
+}
+
+.cb-dashboard-metric-value strong {
+  font-size: clamp(31px, 9vw, 39px);
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+}
+
+.cb-dashboard-metric-value span {
+  margin-left: 4px;
+  color: #454b59;
+  font-size: 16px;
+}
+
+.cb-dashboard-metric-value > small {
+  margin-right: 5px;
+  color: #454b59;
+  font-size: 16px;
+}
+
+.cb-dashboard-metric-subtitle {
+  min-height: 31px;
+  margin: 7px 0 0;
+  color: #4f5666;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.cb-dashboard-fuel-chart {
+  width: 100%;
+  height: 64px;
+  margin-top: 7px;
+  overflow: visible;
+}
+
+.cb-dashboard-fuel-chart line {
+  stroke: #e7e9ef;
+  stroke-width: 1;
+}
+
+.cb-dashboard-fuel-chart polyline {
+  fill: none;
+  stroke: var(--cb-primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.cb-dashboard-fuel-chart circle {
+  fill: var(--cb-primary);
+}
+
+.cb-dashboard-chart-empty {
+  display: grid;
+  height: 64px;
+  margin-top: 7px;
+  place-items: center;
+  color: var(--cb-text-muted);
+  border-top: 1px solid var(--cb-border);
+  font-size: 10px;
+  text-align: center;
+}
+
+.cb-dashboard-expense-bar {
+  display: flex;
+  height: 8px;
+  margin: 13px 0 12px;
+  overflow: hidden;
+  background: #dfe3ec;
+  border-radius: 999px;
+}
+
+.cb-dashboard-expense-bar span:nth-child(1) { background: var(--cb-primary); }
+.cb-dashboard-expense-bar span:nth-child(2) { background: var(--cb-attention); }
+.cb-dashboard-expense-bar span:nth-child(3) { background: #2fc46f; }
+
+.cb-dashboard-expense-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.cb-dashboard-expense-list div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+}
+
+.cb-dashboard-expense-list dt,
+.cb-dashboard-expense-list dd {
+  margin: 0;
+}
+
+.cb-dashboard-expense-list dd {
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.cb-dashboard-expense-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.cb-dashboard-expense-list div:nth-child(1) .cb-dashboard-expense-dot { background: var(--cb-primary); }
+.cb-dashboard-expense-list div:nth-child(2) .cb-dashboard-expense-dot { background: var(--cb-attention); }
+.cb-dashboard-expense-list div:nth-child(3) .cb-dashboard-expense-dot { background: #2fc46f; }
+
+.cb-dashboard-improvement {
+  min-height: 126px;
+  padding: 17px;
+}
+
+.cb-dashboard-improvement .cb-dashboard-eyebrow {
+  color: var(--cb-upgrade);
+}
+
+.cb-dashboard-improvement-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.cb-dashboard-improvement-row h2 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 20px;
+  letter-spacing: -0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cb-dashboard-improvement-row strong {
+  flex: none;
+  font-size: 18px;
+}
+
+.cb-dashboard-improvement > p {
+  margin: 12px 0 0;
+  color: #555c6b;
+  font-size: 14px;
+}
+
+.cb-dashboard-improvement > p i {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 8px 2px;
+  background: var(--cb-attention);
+  border-radius: 50%;
+}
+
+.cb-dashboard-quick-section {
+  display: grid;
+  gap: 13px;
+}
+
+.cb-dashboard-section-title {
+  margin: 0 0 0 5px;
+  color: #454b59;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.cb-dashboard-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+}
+
+.cb-dashboard-quick-action {
+  display: grid;
+  min-width: 0;
+  min-height: 89px;
+  place-items: center;
+  align-content: center;
+  gap: 9px;
+  padding: 8px 2px;
+  color: var(--action-color, var(--cb-text));
+  background: var(--cb-surface);
+  border: 1px solid var(--cb-border);
+  border-radius: 12px;
+  box-shadow: var(--cb-card-shadow);
+  font-size: 9px;
+  touch-action: manipulation;
+}
+
+.cb-dashboard-quick-action + .cb-dashboard-quick-action {
+  margin-left: -1px;
+}
+
+.cb-dashboard-inline-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  color: #7a3f00;
+  background: #fff8eb;
+  border: 1px solid #f5d89a;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.cb-dashboard-inline-state button {
+  flex: none;
+  padding: 0;
+  color: var(--cb-primary);
+  background: transparent;
+  border: 0;
+  font-weight: 750;
+}
+
+.cb-dashboard-loading {
+  min-height: 138px;
+  background: linear-gradient(100deg, #fff 20%, #f0f3f8 45%, #fff 70%);
+  background-size: 240% 100%;
+  animation: cb-dashboard-loading 1.2s ease-in-out infinite;
+}
+
+@keyframes cb-dashboard-loading {
+  to { background-position-x: -240%; }
+}
+
+@media (max-width: 374px) {
+  .cb-dashboard-container { padding-inline: 12px; }
+  .cb-dashboard-health-card { padding-inline: 13px; }
+  .cb-dashboard-health { padding-right: 11px; }
+  .cb-dashboard-attention { padding-left: 11px; }
+  .cb-dashboard-health-score strong { font-size: 34px; }
+  .cb-dashboard-health-score > span { font-size: 14px; }
+  .cb-dashboard-metric-card { padding: 13px; }
+  .cb-dashboard-metric-value strong { font-size: 31px; }
+  .cb-dashboard-expense-list div { gap: 5px; font-size: 10px; }
+  .cb-dashboard-quick-action { font-size: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cb-dashboard-loading { animation: none; }
+  .cb-dashboard-progress span { transition: none; }
+}

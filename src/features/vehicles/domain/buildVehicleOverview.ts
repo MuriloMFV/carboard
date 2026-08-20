@@ -5,9 +5,10 @@ export const buildVehicleHealth = (components: VehicleComponent[]): VehicleHealt
   const attentionCount = components.filter((component) => component.status === 'attention').length;
   const criticalCount = components.filter((component) => component.status === 'critical').length;
   const knownCount = goodCount + attentionCount + criticalCount;
+  const percentage = knownCount > 0 ? Math.round((goodCount / knownCount) * 100) : undefined;
 
   return {
-    percentage: undefined,
+    percentage,
     label: criticalCount > 0 ? 'Crítico' : attentionCount > 0 ? 'Atenção' : knownCount > 0 ? 'Bom' : 'Sem dados',
     goodCount,
     attentionCount: attentionCount + criticalCount,

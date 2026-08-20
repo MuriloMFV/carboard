@@ -1,12 +1,12 @@
 import { IonContent, IonMenu } from '@ionic/react';
 import {
   CarFront,
-  CircleDollarSign,
-  History,
   Home,
   LogOut,
+  ReceiptText,
   Settings,
   UserRound,
+  WalletCards,
 } from 'lucide-react';
 import { useState, type RefObject } from 'react';
 import { useVehicle } from '../../features/vehicles/VehicleContext';
@@ -23,8 +23,8 @@ interface AppSideMenuProps {
 const navigationItems = [
   { label: 'Início', path: '/home', icon: Home },
   { label: 'Meu Carro', path: '/vehicle', icon: CarFront },
-  { label: 'Gastos', path: '/expenses', icon: CircleDollarSign },
-  { label: 'Histórico', path: '/history', icon: History },
+  { label: 'Gastos', path: '/expenses', icon: WalletCards },
+  { label: 'Histórico', path: '/history', icon: ReceiptText },
 ];
 
 export const AppSideMenu = ({ menuRef, disabled, onNavigate, onSignOut }: AppSideMenuProps) => {

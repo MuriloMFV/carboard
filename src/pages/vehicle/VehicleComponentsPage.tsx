@@ -1,5 +1,6 @@
 import { ChevronUp, Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useAppShell } from '../../components/layout/AppShellContext';
 import { Card, FilterChip } from '../../components/ui';
 import { ComponentRow } from '../../features/vehicles/components/ComponentRow';
 import { VehicleDataState } from '../../features/vehicles/components/VehicleDataState';
@@ -14,6 +15,7 @@ const normalize = (value: string): string =>
   value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
 
 export const VehicleComponentsPage = () => {
+  const { openAddComponent } = useAppShell();
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
   const {
@@ -82,7 +84,7 @@ export const VehicleComponentsPage = () => {
           <Card className="cb-empty-filter-result">Nenhum componente encontrado.</Card>
         )}
 
-        <button className="cb-add-component-outline" type="button" aria-disabled="true">
+        <button className="cb-add-component-outline" type="button" onClick={() => openAddComponent()}>
           <Plus size={21} aria-hidden="true" /> Adicionar componente
         </button>
       </div>

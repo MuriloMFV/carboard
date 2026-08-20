@@ -1,4 +1,5 @@
 import { Plus, TriangleAlert } from 'lucide-react';
+import { useAppShell } from '../../components/layout/AppShellContext';
 import { Card } from '../../components/ui';
 import { AttentionItemRow } from '../../features/vehicles/components/AttentionItemRow';
 import { SystemSummaryRow } from '../../features/vehicles/components/SystemSummaryRow';
@@ -9,6 +10,7 @@ import { buildAttentionItems, buildVehicleHealth } from '../../features/vehicles
 import { useVehicle } from '../../features/vehicles/VehicleContext';
 
 export const VehicleOverviewPage = () => {
+  const { openAddComponent } = useAppShell();
   const {
     vehicleComponents,
     vehicleSystems,
@@ -42,7 +44,7 @@ export const VehicleOverviewPage = () => {
         <Card className="cb-list-card cb-systems-card">
           <header className="cb-list-card__header">Sistemas do veículo</header>
           {vehicleSystems.map((system) => <SystemSummaryRow key={system.id} system={system} />)}
-          <button className="cb-add-component-link" type="button" aria-disabled="true">
+          <button className="cb-add-component-link" type="button" onClick={() => openAddComponent()}>
             <Plus size={18} aria-hidden="true" /> Adicionar componente
           </button>
         </Card>

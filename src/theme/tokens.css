@@ -1,22 +1,22 @@
 :root {
-  --cb-primary: #2563eb;
-  --cb-primary-dark: #1d4ed8;
+  --cb-primary: #087ff5;
+  --cb-primary-dark: #006bdc;
   --cb-onboarding-primary: #087ff5;
   --cb-onboarding-primary-dark: #0569ce;
   --cb-onboarding-border: #bdc9dc;
   --cb-onboarding-complete-background: #f1f6fc;
-  --cb-background: #f7f9fc;
+  --cb-background: #f8f8ff;
   --cb-surface: #ffffff;
-  --cb-text: #172033;
-  --cb-text-muted: #7b8496;
+  --cb-text: #20232a;
+  --cb-text-muted: #687083;
   --cb-attention: #f59e0b;
   --cb-critical: #ef4444;
   --cb-upgrade: #8b5cf6;
   --cb-success: #16a34a;
-  --cb-border: #e5e9f0;
+  --cb-border: #e1e5ee;
   --cb-radius-sm: 8px;
   --cb-radius-md: 12px;
-  --cb-radius-lg: 16px;
+  --cb-radius-lg: 13px;
   --cb-space-xs: 4px;
   --cb-space-sm: 8px;
   --cb-space-md: 16px;
@@ -24,7 +24,8 @@
   --cb-space-xl: 32px;
   --cb-content-max-width: 560px;
   --cb-bottom-nav-height: 76px;
-  --ion-color-primary: #2563eb;
-  --ion-background-color: #f7f9fc;
+  --cb-card-shadow: 0 2px 7px rgb(39 50 74 / 6%);
+  --ion-color-primary: #087ff5;
+  --ion-background-color: #f8f8ff;
   --ion-font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }

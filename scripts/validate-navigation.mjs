@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
@@ -10,6 +10,7 @@ const publishableKey = process.env.CARBOARD_SUPABASE_PUBLISHABLE_KEY;
 const chromePath = process.env.CARBOARD_CHROME_PATH
   ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const debugPort = 9333;
+const dashboardScreenshotPath = process.env.CARBOARD_DASHBOARD_SCREENSHOT_PATH;
 
 if (!supabaseUrl || !publishableKey) {
   throw new Error('Defina CARBOARD_SUPABASE_URL e CARBOARD_SUPABASE_PUBLISHABLE_KEY.');
@@ -39,20 +40,54 @@ const waitFor = async (check, message, timeout = 10000) => {
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const email = `navigation-${suffix}@carboard.dev`;
 const password = 'CarBoard-navigation-2026!';
+const customComponentName = `Câmera de ré ${suffix}`;
 const supabase = createClient(supabaseUrl, publishableKey, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
 });
 
 const { data: signUp, error: signUpError } = await supabase.auth.signUp({ email, password });
 assert(!signUpError && signUp.session, `Não foi possível criar a sessão de navegação: ${signUpError?.message}`);
-const { error: vehicleError } = await supabase.rpc('create_vehicle_with_components', {
+const { data: vehicle, error: vehicleError } = await supabase.rpc('create_vehicle_with_components', {
   p_brand: 'Honda',
   p_model: 'Fit',
   p_year: 2016,
   p_current_mileage: 84500,
   p_nickname: 'Fit de teste',
+  p_engine: '1.5 16V',
+  p_oil_status: 'attention',
+  p_tire_status: 'good',
 });
-assert(!vehicleError, `Não foi possível criar o veículo de navegação: ${vehicleError?.message}`);
+assert(!vehicleError && vehicle, `Não foi possível criar o veículo de navegação: ${vehicleError?.message}`);
+
+const today = new Date().toISOString().slice(0, 10);
+const dashboardSeedResults = await Promise.all([
+  supabase.from('fuel_records').insert([
+    { vehicle_id: vehicle.id, fueled_at: today, mileage: 83000, fuel_type: 'gasoline', total_cost: 80, liters: 43, full_tank: true },
+    { vehicle_id: vehicle.id, fueled_at: today, mileage: 83500, fuel_type: 'gasoline', total_cost: 85, liters: 42, full_tank: true },
+    { vehicle_id: vehicle.id, fueled_at: today, mileage: 84000, fuel_type: 'gasoline', total_cost: 90, liters: 44, full_tank: true },
+    { vehicle_id: vehicle.id, fueled_at: today, mileage: 84500, fuel_type: 'gasoline', total_cost: 92, liters: 41, full_tank: true },
+  ]),
+  supabase.from('maintenance_records').insert({
+    vehicle_id: vehicle.id,
+    service_date: today,
+    mileage: 84000,
+    title: 'Revisão preventiva',
+    total_cost: 130,
+  }),
+  supabase.from('improvements').insert([
+    { vehicle_id: vehicle.id, title: 'Alto-falantes das portas', priority: 'medium', status: 'planned', estimated_budget: 280 },
+    { vehicle_id: vehicle.id, title: 'Tapetes novos', priority: 'low', status: 'purchased', actual_cost: 50, purchased_at: today },
+  ]),
+  supabase.from('problems').insert({
+    vehicle_id: vehicle.id,
+    title: 'Troca de óleo',
+    detected_at: today,
+    mileage: 84500,
+    priority: 'high',
+  }),
+]);
+const dashboardSeedError = dashboardSeedResults.map((result) => result.error).find(Boolean);
+assert(!dashboardSeedError, `Não foi possível preparar os dados do dashboard: ${dashboardSeedError?.message}`);
 
 const profileDirectory = await mkdtemp(join(tmpdir(), 'carboard-chrome-'));
 const chrome = spawn(chromePath, [
@@ -133,6 +168,27 @@ try {
     return true;
   })()`);
 
+  const tap = async (selector) => {
+    const point = await evaluate(`(() => {
+      const element = document.querySelector(${JSON.stringify(selector)});
+      if (!element) return null;
+      element.scrollIntoView({ block: 'center', inline: 'center' });
+      const bounds = element.getBoundingClientRect();
+      const x = bounds.left + bounds.width / 2;
+      const y = bounds.top + bounds.height / 2;
+      const hit = document.elementFromPoint(x, y);
+      if (!hit || !element.contains(hit)) return null;
+      return { x, y };
+    })()`);
+    if (!point) return false;
+    await command('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: point.x, y: point.y }],
+    });
+    await command('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    return true;
+  };
+
   const clickButtonText = (containerSelector, label) => evaluate(`(() => {
     const container = document.querySelector(${JSON.stringify(containerSelector)});
     const button = [...(container?.querySelectorAll('button') ?? [])]
@@ -145,6 +201,11 @@ try {
   const overlayIsOpen = (selector) => evaluate(`(() => {
     const overlay = document.querySelector(${JSON.stringify(selector)});
     return Boolean(overlay && (overlay.presented || overlay.classList.contains('show-modal')));
+  })()`);
+
+  const overlayContentHeight = (selector) => evaluate(`(() => {
+    const overlay = document.querySelector(${JSON.stringify(selector)});
+    return overlay?.shadowRoot?.querySelector('.modal-wrapper')?.getBoundingClientRect().height ?? 0;
   })()`);
 
   const menuIsOpen = () => evaluate(`document.querySelector('ion-menu.cb-side-menu')?.isOpen() ?? false`);
@@ -173,6 +234,35 @@ try {
   const storageKey = `sb-${new URL(supabaseUrl).hostname.split('.')[0]}-auth-token`;
   await evaluate(`localStorage.setItem(${JSON.stringify(storageKey)}, ${JSON.stringify(JSON.stringify(signUp.session))})`);
   await navigate('/home');
+  await waitFor(
+    () => evaluate("document.querySelector('.cb-dashboard-health-card') !== null"),
+    'O resumo do dashboard não apareceu',
+  );
+  const dashboardCopy = await evaluate("document.querySelector('.cb-dashboard-container')?.textContent ?? ''");
+  assert(dashboardCopy.includes('Fit de teste'), 'O dashboard não exibiu o veículo real selecionado.');
+  assert(dashboardCopy.includes('527'), 'O dashboard não agregou os gastos reais do mês.');
+  assert(dashboardCopy.includes('Alto-falantes das portas'), 'O dashboard não exibiu a melhoria real planejada.');
+  assert(dashboardCopy.includes('Troca de óleo'), 'O dashboard não exibiu o problema real em aberto.');
+
+  if (dashboardScreenshotPath) {
+    await command('Emulation.setDeviceMetricsOverride', {
+      width: 430,
+      height: 1100,
+      deviceScaleFactor: 1,
+      mobile: true,
+    });
+    await navigate('/home');
+    await waitFor(
+      () => evaluate("document.querySelector('.cb-dashboard-health-card') !== null"),
+      'Dashboard não ficou pronto para a captura',
+    );
+    const screenshot = await command('Page.captureScreenshot', {
+      format: 'png',
+      captureBeyondViewport: false,
+      fromSurface: true,
+    });
+    await writeFile(dashboardScreenshotPath, Buffer.from(screenshot.data, 'base64'));
+  }
 
   for (const width of [360, 390, 430]) {
     await command('Emulation.setDeviceMetricsOverride', {
@@ -182,6 +272,8 @@ try {
       mobile: true,
     });
     await navigate('/home');
+    const hasHorizontalOverflow = await evaluate('document.documentElement.scrollWidth > window.innerWidth');
+    assert(!hasHorizontalOverflow, `O dashboard criou overflow horizontal em ${width}px.`);
     const triggerHitTest = await evaluate(`(() => {
       const trigger = document.querySelector('.cb-quick-action-trigger');
       if (!trigger) return false;
@@ -191,8 +283,9 @@ try {
     })()`);
     assert(triggerHitTest, `O botão + não está integralmente clicável em ${width}px.`);
 
-    assert(await click('.cb-quick-action-trigger'), `O botão + não foi encontrado em ${width}px.`);
+    assert(await tap('.cb-quick-action-trigger'), `O botão + não recebeu toque real em ${width}px.`);
     await waitFor(() => overlayIsOpen('ion-modal.cb-quick-sheet'), `QuickActionSheet não abriu em ${width}px.`);
+    assert(await overlayContentHeight('ion-modal.cb-quick-sheet') >= 500, `QuickActionSheet ficou sem altura visível em ${width}px.`);
     const pathBeforeSheetBack = await evaluate('location.pathname');
     assert(await pressHardwareBack() === 100, `Back não priorizou o sheet em ${width}px.`);
     await waitFor(async () => !(await overlayIsOpen('ion-modal.cb-quick-sheet')), `Back não fechou o sheet em ${width}px.`);
@@ -213,7 +306,7 @@ try {
     const labels = await evaluate(`[...document.querySelectorAll('.cb-action-item')].map((item) => item.textContent?.trim())`);
     assert(
       ['Abastecimento', 'Manutenção', 'Problema', 'Melhoria', 'Atualizar quilometragem']
-        .every((label) => labels.includes(label)),
+        .every((label) => labels.some((text) => text.includes(label))),
       `Ações incompletas no sheet aberto em ${path}.`,
     );
     await pressHardwareBack();
@@ -238,8 +331,44 @@ try {
   await waitFor(() => overlayIsOpen('ion-modal.cb-quick-sheet'), 'Sheet não abriu para Atualizar quilometragem.');
   assert(await clickButtonText('.cb-quick-sheet', 'Atualizar quilometragem'), 'Ação Atualizar quilometragem não foi encontrada.');
   await waitFor(() => overlayIsOpen('ion-modal.cb-mileage-sheet'), 'MileageUpdateSheet não abriu.');
+  assert(await overlayContentHeight('ion-modal.cb-mileage-sheet') >= 500, 'MileageUpdateSheet ficou sem altura visível.');
   assert(await pressHardwareBack() === 100, 'Back não priorizou MileageUpdateSheet.');
   await waitFor(async () => !(await overlayIsOpen('ion-modal.cb-mileage-sheet')), 'Back não fechou MileageUpdateSheet.');
+
+  await navigate('/home');
+  assert(await tap('.cb-dashboard-mileage-action'), 'O botão Atualizar KM da dashboard não recebeu toque real.');
+  await waitFor(() => overlayIsOpen('ion-modal.cb-mileage-sheet'), 'Atualizar KM da dashboard não abriu o sheet.');
+  await pressHardwareBack();
+  await waitFor(async () => !(await overlayIsOpen('ion-modal.cb-mileage-sheet')), 'Sheet de KM ficou preso após abrir pela dashboard.');
+
+  await navigate('/vehicle/components');
+  assert(await tap('.cb-add-component-outline'), 'O botão Adicionar componente não recebeu toque real.');
+  await waitFor(() => overlayIsOpen('ion-modal.cb-add-component-sheet'), 'O formulário de componente não abriu.');
+  assert(await overlayContentHeight('ion-modal.cb-add-component-sheet') >= 420, 'O formulário de componente ficou sem altura visível.');
+  assert(await evaluate(`(() => {
+    const input = document.querySelector('.cb-add-component-sheet input[name="component-name"]');
+    if (!input) return false;
+    input.focus();
+    return true;
+  })()`), 'Campo de nome do componente não foi encontrado.');
+  await command('Input.insertText', { text: customComponentName });
+  await wait(80);
+  assert(await clickButtonText('.cb-add-component-sheet', 'Adicionar componente'), 'Não foi possível confirmar o componente.');
+  await waitFor(async () => !(await overlayIsOpen('ion-modal.cb-add-component-sheet')), 'O formulário não fechou após adicionar o componente.');
+  await waitFor(
+    () => evaluate(`document.querySelector('.cb-components-screen')?.textContent?.includes(${JSON.stringify(customComponentName)}) ?? false`),
+    'O novo componente não apareceu em Meu Carro.',
+  );
+  const { data: customComponent, error: customComponentError } = await supabase
+    .from('vehicle_components')
+    .select('id,vehicle_id,custom_name,status')
+    .eq('vehicle_id', vehicle.id)
+    .eq('custom_name', customComponentName)
+    .single();
+  assert(
+    !customComponentError && customComponent.status === 'no_data',
+    'O componente personalizado não persistiu corretamente no Supabase.',
+  );
 
   for (const [label, expectedPath] of [
     ['Início', '/home'],
@@ -266,6 +395,8 @@ try {
     viewports: '360px, 390px e 430px validados',
     quickAction: 'funcional em Home, Meu Carro, Gastos e Histórico',
     actions: 'quatro rotas e MileageUpdateSheet validados',
+    mileage: 'toque no botão da dashboard e abertura do sheet validados',
+    addComponent: 'abertura, inserção real e atualização da lista validadas',
     menu: 'abertura, quatro rotas, fechamento e logout real validados',
     androidBack: 'sheet, mileage e menu fecham antes da navegação',
   }));

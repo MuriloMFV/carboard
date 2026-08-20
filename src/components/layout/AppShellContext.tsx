@@ -12,12 +12,15 @@ import {
 import { useAuth } from '../../features/auth/AuthContext';
 import { MileageUpdateSheet } from '../../features/records/components/MileageUpdateSheet';
 import { useVehicle } from '../../features/vehicles/VehicleContext';
+import { AddVehicleComponentSheet } from '../../features/vehicles/components/AddVehicleComponentSheet';
 import { QuickActionSheet } from '../ui/QuickActionSheet';
 import { AppSideMenu } from './AppSideMenu';
 
 interface AppShellContextValue {
   openQuickActions: () => void;
   openSideMenu: () => void;
+  openMileageUpdate: () => void;
+  openAddComponent: (systemCatalogId?: string) => void;
 }
 
 type PendingQuickAction =
@@ -34,6 +37,8 @@ export const AppShellProvider = ({ children }: PropsWithChildren) => {
   const pendingQuickAction = useRef<PendingQuickAction>();
   const [isQuickActionOpen, setQuickActionOpen] = useState(false);
   const [isMileageOpen, setMileageOpen] = useState(false);
+  const [isAddComponentOpen, setAddComponentOpen] = useState(false);
+  const [addComponentSystemId, setAddComponentSystemId] = useState<string>();
 
   const closeSideMenu = useCallback(async () => {
     await menuRef.current?.close();
@@ -43,6 +48,7 @@ export const AppShellProvider = ({ children }: PropsWithChildren) => {
     if (!user || !selectedVehicle) return;
     setQuickActionOpen(false);
     setMileageOpen(false);
+    setAddComponentOpen(false);
     void menuRef.current?.open();
   }, [selectedVehicle, user]);
 
@@ -51,11 +57,36 @@ export const AppShellProvider = ({ children }: PropsWithChildren) => {
     pendingQuickAction.current = undefined;
     void closeSideMenu();
     setMileageOpen(false);
+    setAddComponentOpen(false);
     setQuickActionOpen(true);
+  }, [closeSideMenu, selectedVehicle, user]);
+
+  const openMileageUpdate = useCallback(() => {
+    if (!user || !selectedVehicle) return;
+    pendingQuickAction.current = undefined;
+    void closeSideMenu();
+    setQuickActionOpen(false);
+    setAddComponentOpen(false);
+    setMileageOpen(true);
+  }, [closeSideMenu, selectedVehicle, user]);
+
+  const openAddComponent = useCallback((systemCatalogId?: string) => {
+    if (!user || !selectedVehicle) return;
+    pendingQuickAction.current = undefined;
+    void closeSideMenu();
+    setQuickActionOpen(false);
+    setMileageOpen(false);
+    setAddComponentSystemId(systemCatalogId);
+    setAddComponentOpen(true);
   }, [closeSideMenu, selectedVehicle, user]);
 
   const selectQuickAction = useCallback((path?: string) => {
     pendingQuickAction.current = path ? { type: 'route', path } : { type: 'mileage' };
+    setQuickActionOpen(false);
+  }, []);
+
+  const closeQuickActions = useCallback(() => {
+    pendingQuickAction.current = undefined;
     setQuickActionOpen(false);
   }, []);
 
@@ -86,13 +117,16 @@ export const AppShellProvider = ({ children }: PropsWithChildren) => {
     pendingQuickAction.current = undefined;
     setQuickActionOpen(false);
     setMileageOpen(false);
+    setAddComponentOpen(false);
     void menuRef.current?.close(false);
   }, [selectedVehicle, user]);
 
   const value = useMemo<AppShellContextValue>(() => ({
+    openAddComponent,
+    openMileageUpdate,
     openQuickActions,
     openSideMenu,
-  }), [openQuickActions, openSideMenu]);
+  }), [openAddComponent, openMileageUpdate, openQuickActions, openSideMenu]);
 
   return (
     <AppShellContext.Provider value={value}>
@@ -105,10 +139,16 @@ export const AppShellProvider = ({ children }: PropsWithChildren) => {
       {children}
       <QuickActionSheet
         isOpen={isQuickActionOpen}
+        onClose={closeQuickActions}
         onDismiss={finishQuickActionDismiss}
         onSelectAction={selectQuickAction}
       />
       <MileageUpdateSheet isOpen={isMileageOpen} onDismiss={() => setMileageOpen(false)} />
+      <AddVehicleComponentSheet
+        isOpen={isAddComponentOpen}
+        initialSystemCatalogId={addComponentSystemId}
+        onDismiss={() => setAddComponentOpen(false)}
+      />
     </AppShellContext.Provider>
   );
 };

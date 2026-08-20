@@ -418,13 +418,14 @@
 }
 
 .cb-mileage-sheet {
-  --height: auto;
+  --width: 100%;
+  --height: min(620px, calc(100dvh - 72px));
   --border-radius: 18px 18px 0 0;
+  --backdrop-opacity: 0.38;
 }
 
 .cb-mileage-sheet::part(content) {
   max-width: var(--cb-content-max-width);
-  max-height: min(680px, 92vh);
   margin-inline: auto;
 }
 

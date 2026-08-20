@@ -69,7 +69,16 @@ export const MileageUpdateSheet = ({ isOpen, onDismiss }: MileageUpdateSheetProp
   };
 
   return (
-    <IonModal className="cb-mileage-sheet" isOpen={isOpen} onDidDismiss={onDismiss} initialBreakpoint={1} breakpoints={[0, 1]}>
+    <IonModal
+      className="cb-mileage-sheet"
+      isOpen={isOpen}
+      onDidDismiss={onDismiss}
+      initialBreakpoint={1}
+      breakpoints={[0, 1]}
+      backdropDismiss
+      keyboardClose
+      handle={false}
+    >
       <IonContent>
         <div className="cb-mileage-sheet__content">
           <div className="cb-sheet-handle" aria-hidden="true" />

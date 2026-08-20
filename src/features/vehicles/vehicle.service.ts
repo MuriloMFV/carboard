@@ -170,6 +170,38 @@ export const loadVehicleData = async (vehicleId: string, currentMileage: number)
   return { systems, components };
 };
 
+interface CreateCustomVehicleComponentInput {
+  vehicleId: string;
+  systemCatalogId: string;
+  name: string;
+}
+
+export const createCustomVehicleComponent = async ({
+  vehicleId,
+  systemCatalogId,
+  name,
+}: CreateCustomVehicleComponentInput): Promise<string> => {
+  const customName = name.trim();
+  if (!customName) throw new Error('Informe o nome do componente.');
+
+  const { data, error } = await supabase
+    .from('vehicle_components')
+    .insert({
+      vehicle_id: vehicleId,
+      system_id: systemCatalogId,
+      custom_name: customName,
+      status: 'no_data',
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('Falha ao adicionar componente ao veículo.', error);
+    throw new Error('Não foi possível adicionar o componente. Tente novamente.');
+  }
+  return data.id;
+};
+
 export const createVehicleFromOnboarding = async (onboarding: OnboardingData): Promise<Vehicle> => {
   const year = Number(onboarding.vehicle.year);
   const mileage = onboarding.mileage ?? 0;
